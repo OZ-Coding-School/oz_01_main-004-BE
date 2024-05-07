@@ -20,7 +20,11 @@ THIRD_PARTY_APPS = [
     'corsheaders',
 ]
 
-INSTALLED_APPS = THIRD_PARTY_APPS + DJANGO_SYSTEM_APPS
+CUSTOM_USER_APPS = [
+
+]
+
+INSTALLED_APPS = CUSTOM_USER_APPS + THIRD_PARTY_APPS + DJANGO_SYSTEM_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
