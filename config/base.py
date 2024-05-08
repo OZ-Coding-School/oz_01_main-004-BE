@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,6 +25,7 @@ CUSTOM_USER_APPS = [
     'daphne',
     # 다른 third-party app들에 의해 daphne가 덮여 쓰여질 수 있으니 INSTALLED_APPS의 가장 상단에 위치시켰는지 확인해야 한다.
     'chat',
+    'common.apps.CommonConfig',
 ]
 
 INSTALLED_APPS = CUSTOM_USER_APPS + THIRD_PARTY_APPS + DJANGO_SYSTEM_APPS
@@ -91,6 +93,11 @@ USE_I18N = True
 
 USE_TZ = False
 
+# 미디어 파일이 저장될 경로 설정
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 미디어 파일에 접근할 수 있는 URL 설정
+MEDIA_URL = '/media/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -103,7 +110,7 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = ['http://127.0.0.1:5173']
+CORS_ALLOWED_ORIGINS = ['http://127.0.0.1:3000']
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -111,7 +118,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # SECURE_SSL_REDIRECT = True
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5173']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:3000']
 
 CSRF_COOKIE_SECURE = True
 
