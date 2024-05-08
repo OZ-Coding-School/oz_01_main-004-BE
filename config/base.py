@@ -21,7 +21,9 @@ THIRD_PARTY_APPS = [
 ]
 
 CUSTOM_USER_APPS = [
-    'common.apps.CommonConfig',
+    'daphne',
+    # 다른 third-party app들에 의해 daphne가 덮여 쓰여질 수 있으니 INSTALLED_APPS의 가장 상단에 위치시켰는지 확인해야 한다.
+    'chat',
 ]
 
 INSTALLED_APPS = CUSTOM_USER_APPS + THIRD_PARTY_APPS + DJANGO_SYSTEM_APPS
@@ -56,6 +58,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Daphne
+ASGI_APPLICATION = "config.asgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -99,7 +103,7 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = ['http://127.0.0.1:3000']
+CORS_ALLOWED_ORIGINS = ['http://127.0.0.1:5173']
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -107,7 +111,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # SECURE_SSL_REDIRECT = True
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:3000']
+CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:5173']
 
 CSRF_COOKIE_SECURE = True
 

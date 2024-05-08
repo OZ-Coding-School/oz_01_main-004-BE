@@ -17,6 +17,9 @@ pillow = "^10.3.0"
 gunicorn = "^22.0.0"
 requests = "^2.31.0"
 boto3 = "^1.34.98"
+channels = "^4.1.0"
+daphne = "^4.1.2"
+channels-redis = "^4.2.0"
 
 
 [build-system]
