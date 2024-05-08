@@ -16,6 +16,7 @@ media
 .secret/
 settings.py
 sqlite3.db
+migrations/
 
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
