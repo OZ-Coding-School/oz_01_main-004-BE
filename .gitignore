@@ -17,6 +17,7 @@ media
 settings.py
 sqlite3.db
 migrations/
+Makefile
 
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/

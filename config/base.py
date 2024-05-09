@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -21,6 +22,9 @@ THIRD_PARTY_APPS = [
 ]
 
 CUSTOM_USER_APPS = [
+    'daphne',
+    # 다른 third-party app들에 의해 daphne가 덮여 쓰여질 수 있으니 INSTALLED_APPS의 가장 상단에 위치시켰는지 확인해야 한다.
+    'chat',
     'common.apps.CommonConfig',
 ]
 
@@ -56,6 +60,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+# Daphne
+ASGI_APPLICATION = "config.asgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -87,6 +93,11 @@ USE_I18N = True
 
 USE_TZ = False
 
+# 미디어 파일이 저장될 경로 설정
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 미디어 파일에 접근할 수 있는 URL 설정
+MEDIA_URL = '/media/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
