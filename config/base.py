@@ -1,8 +1,15 @@
 import os
 from pathlib import Path
 
+import environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env(DEBUG=(bool, False))
+environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+SECRET_KEY = env("SECRET_KEY")
 
 # Application definition
 DJANGO_SYSTEM_APPS = [
@@ -19,18 +26,28 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
+    "django_cleanup.apps.CleanupConfig",
 ]
 
 CUSTOM_USER_APPS = [
-    "daphne",
-    # 다른 third-party app들에 의해 daphne가 덮여 쓰여질 수 있으니 INSTALLED_APPS의 가장 상단에 위치시켰는지 확인해야 한다.
-    "chat",
     "common.apps.CommonConfig",
+    "comments.apps.CommentsConfig",
+    "users.apps.UsersConfig",
+    "recipes.apps.RecipesConfig",
+    "foods.apps.FoodsConfig",
+    "favorite.apps.FavoriteConfig",
 ]
 
 INSTALLED_APPS = CUSTOM_USER_APPS + THIRD_PARTY_APPS + DJANGO_SYSTEM_APPS
 
+AUTH_USER_MODEL = "users.CustomUser"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+}
+
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -60,8 +77,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Daphne
-ASGI_APPLICATION = "config.asgi.application"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -93,16 +108,10 @@ USE_I18N = True
 
 USE_TZ = False
 
-# 미디어 파일이 저장될 경로 설정
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-
-# 미디어 파일에 접근할 수 있는 URL 설정
-MEDIA_URL = "/media/"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
 
 # Default primary key field type
@@ -110,16 +119,17 @@ STATIC_ROOT = BASE_DIR / "static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+AWS_REGION_NAME = env("AWS_REGION_NAME")
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.%s.amazonaws.com" % (AWS_STORAGE_BUCKET_NAME, AWS_REGION_NAME)
+AWS_S3_OBJECT_PARAMETERS = {
+    "CacheControl": "max-age=86400",
+}
+AWS_LOCATION = "cookbap"
+STATIC_URL = "https://%s/%s/static/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+STATICFILES_STORAGE = "storages.backends.s3.S3Storage"
 
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ORIGIN_ALLOW_ALL = True
-
-# SECURE_SSL_REDIRECT = True
-
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000"]
-
-CSRF_COOKIE_SECURE = True
-
-SESSION_COOKIE_SECURE = True
+MEDIA_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
+DEFAULT_FILE_STORAGE = "storages.backends.s3.S3Storage"
