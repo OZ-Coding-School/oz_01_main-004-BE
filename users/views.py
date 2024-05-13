@@ -1,16 +1,21 @@
+import requests
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import SignInSerializer, SignUpSerializer, UserSerializer, UserProfileImageSerializer
+
+from config.base import env
 
 from .models import CustomUser
-
-import requests
-from config.base import env
+from .serializers import (
+    SignInSerializer,
+    SignUpSerializer,
+    UserProfileImageSerializer,
+    UserSerializer,
+)
 
 
 class SignUpAPIView(APIView):
@@ -34,7 +39,8 @@ class SignInAPIView(TokenObtainPairView):
                 "message": "Successfully Sign In",
                 "access": access_token,
                 "refresh": refresh_token,
-            }, status=status.HTTP_200_OK
+            },
+            status=status.HTTP_200_OK,
         )
 
 
@@ -169,10 +175,5 @@ class UserProfileImageView(APIView):
         serializer = self.serializer_class(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                data={
-                    "message": "Successfully Profile Image Upload"
-                },
-                status=status.HTTP_201_CREATED
-            )
+            return Response(data={"message": "Successfully Profile Image Upload"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

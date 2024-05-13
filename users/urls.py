@@ -16,5 +16,4 @@ urlpatterns = [
     path("detail", UserDetailView.as_view(), name="user_detail"),
     path("token-refresh", TokenRefreshView.as_view(), name="token_refresh"),
     path("profile-image", UserProfileImageView.as_view(), name="profile-image"),
-
 ]
