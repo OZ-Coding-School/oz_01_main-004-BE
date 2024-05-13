@@ -1,28 +1,23 @@
 from django.urls import path
+
 from .views import (
-    ChatRoomListCreateAPIView,
-    ChatRoomRetrieveAPIView,
-    ChatMessageCreateAPIView,
-    ChatMessageDeleteAPIView,
     ChatFileCreateAPIView,
     ChatFileDeleteAPIView,
+    ChatMessageCreateAPIView,
+    ChatMessageDeleteAPIView,
+    ChatRoomListCreateAPIView,
     ChatRoomNameRetrieveUpdateAPIView,
+    ChatRoomRetrieveAPIView,
     LeaveChatRoomAPIView,
 )
-
-
 
 urlpatterns = [
     # 채팅방 생성/불러오기
     path("chatrooms/", ChatRoomListCreateAPIView.as_view(), name="chatroom-list"),
     # 특정 채팅방 블러오기
-    path(
-        "chatrooms/<int:pk>/", ChatRoomRetrieveAPIView.as_view(), name="chatroom-detail"
-    ),
+    path("chatrooms/<int:pk>/", ChatRoomRetrieveAPIView.as_view(), name="chatroom-detail"),
     # 채팅메시지 생성
-    path(
-        "chatmessages/", ChatMessageCreateAPIView.as_view(), name="chatmessage-create"
-    ),
+    path("chatmessages/", ChatMessageCreateAPIView.as_view(), name="chatmessage-create"),
     # 채팅메시지 삭제
     path(
         "chatmessages/<int:pk>/",

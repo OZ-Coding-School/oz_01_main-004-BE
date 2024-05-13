@@ -1,7 +1,10 @@
-from rest_framework import serializers
-from .models import ChatRoom, ChatMessage, ChatFile
-from django.contrib.auth.models import User
 from operator import attrgetter
+
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+from .models import ChatFile, ChatMessage, ChatRoom
+
 
 class ChatFileSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(queryset=ChatRoom.objects.all())
@@ -17,7 +20,6 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
         fields = "__all__"
-
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
@@ -45,7 +47,6 @@ class ChatRoomDetailSerializer(serializers.ModelSerializer):
                 serialized_data.append(ChatFileSerializer(message).data)
         return serialized_data
         # reverse=True 내림차순,reverse=False/생략 오름차순
-
 
     # def get_room_name(self, instance):
     #     return self.context.get('room_name', None)

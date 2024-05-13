@@ -1,14 +1,14 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-from rest_framework import status
-from .models import ChatRoom, ChatMessage, ChatFile
+
+from .models import ChatFile, ChatMessage, ChatRoom
 from .serializers import (
-    ChatRoomSerializer,
-    ChatRoomDetailSerializer,
-    ChatMessageSerializer,
     ChatFileSerializer,
+    ChatMessageSerializer,
+    ChatRoomDetailSerializer,
     ChatRoomNameUpdateSerializer,
+    ChatRoomSerializer,
 )
 
 
@@ -25,8 +25,10 @@ class IsSender(permissions.BasePermission):
     """
     작성자가 유저 본인인지 확인하는 클래스
     """
+
     def has_object_permission(self, request, view, obj):
         return request.user == obj.sender.all()
+
 
 class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
     queryset = ChatRoom.objects.all()
@@ -56,14 +58,12 @@ class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
         # 채팅방 이름이 없는 경우, 참가자들의 이름으로 채팅방 이름 설정
         for chat_room in queryset:
             if not chat_room.name:
-                chat_room.name = ", ".join(
-                    [str(user) for user in chat_room.participant.all()]
-                )
+                chat_room.name = ", ".join([str(user) for user in chat_room.participant.all()])
         return queryset
 
     def perform_create(self, serializer):
         user = self.request.user
-        participants = self.request.data.get('participant', [])  # 요청에서 참가자 목록 가져오기
+        participants = self.request.data.get("participant", [])  # 요청에서 참가자 목록 가져오기
         participants.append(user.id)  # 현재 사용자도 참가자에 추가
         serializer.save(participant=participants)  # 새로운 채팅방을 생성할 때 참가자 설정
 
@@ -81,9 +81,9 @@ class ChatMessageCreateAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         # 채팅방 ID 가져오기
-        chatroom_id = request.data.get('room')
-        sender_id = request.data.get('sender')
-        message_content = request.data.get('content')
+        chatroom_id = request.data.get("room")
+        sender_id = request.data.get("sender")
+        message_content = request.data.get("content")
 
         # 채팅방 객체 가져오기
         try:
@@ -92,10 +92,14 @@ class ChatMessageCreateAPIView(generics.CreateAPIView):
             return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         # 채팅방의 참가자 목록에서 작성자 찾기
-        if sender_id not in chatroom.participant.values_list('id', flat=True):
-            return Response({"error": "채팅방에 참가하지 않은 유저는 메시지를 작성할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+        if sender_id not in chatroom.participant.values_list("id", flat=True):
+            return Response(
+                {"error": "채팅방에 참가하지 않은 유저는 메시지를 작성할 수 없습니다."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         return super().create(request, *args, **kwargs)
+
 
 class ChatMessageDeleteAPIView(generics.DestroyAPIView):
     queryset = ChatMessage.objects.all()
@@ -110,9 +114,9 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         # 채팅방 ID 가져오기
-        chatroom_id = request.data.get('room')
-        sender_id = request.data.get('sender')
-        message_file = request.data.get('file')
+        chatroom_id = request.data.get("room")
+        sender_id = request.data.get("sender")
+        message_file = request.data.get("file")
 
         # 채팅방 객체 가져오기
         try:
@@ -121,8 +125,11 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
             return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         # 채팅방의 참가자 목록에서 작성자 찾기
-        if sender_id not in chatroom.participant.values_list('id', flat=True):
-            return Response({"error": "채팅방에 참가하지 않은 유저는 파일메시지를 작성할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+        if sender_id not in chatroom.participant.values_list("id", flat=True):
+            return Response(
+                {"error": "채팅방에 참가하지 않은 유저는 파일메시지를 작성할 수 없습니다."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         return super().create(request, *args, **kwargs)
 
