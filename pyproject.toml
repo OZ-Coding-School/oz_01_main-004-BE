@@ -17,7 +17,41 @@ pillow = "^10.3.0"
 gunicorn = "^22.0.0"
 requests = "^2.31.0"
 boto3 = "^1.34.98"
+channels = "^4.1.0"
+daphne = "^4.1.2"
+channels-redis = "^4.2.0"
+django-storages = "^1.14.3"
+django-cleanup = "^8.1.0"
 
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+plugins = ["mypy_django_plugin.main"]
+ignore_missing_imports = true
+python_version = 3.12
+strict = true
+
+[[tool.mypy.overrides]]
+module = "*.migrations.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "manage"
+ignore_errors = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+isort = "^5.13.2"
+mypy = "^1.10.0"
+django-stubs = "^5.0.0"
+djangorestframework-stubs = "^3.15.0"
 
 [build-system]
 requires = ["poetry-core"]
