@@ -47,4 +47,4 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['profile_image']
+        fields = ["profile_image"]
