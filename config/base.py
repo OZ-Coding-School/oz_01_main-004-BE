@@ -31,11 +31,12 @@ THIRD_PARTY_APPS = [
 
 CUSTOM_USER_APPS = [
     "common.apps.CommonConfig",
-    "comments.apps.CommentsConfig",
+    # "comments.apps.CommentsConfig",
     "users.apps.UsersConfig",
-    "recipes.apps.RecipesConfig",
-    "foods.apps.FoodsConfig",
-    "favorite.apps.FavoriteConfig",
+    # "recipes.apps.RecipesConfig",
+    # "foods.apps.FoodsConfig",
+    # "favorite.apps.FavoriteConfig",
+    "chat.apps.ChatConfig",
 ]
 
 INSTALLED_APPS = CUSTOM_USER_APPS + THIRD_PARTY_APPS + DJANGO_SYSTEM_APPS
