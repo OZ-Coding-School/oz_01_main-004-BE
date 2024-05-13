@@ -1,11 +1,16 @@
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import SignInSerializer, SignUpSerializer, UserSerializer, UserProfileImageSerializer
+
+from .models import CustomUser
+
+import requests
+from config.base import env
 
 
 class SignUpAPIView(APIView):
@@ -31,6 +36,71 @@ class SignInAPIView(TokenObtainPairView):
                 "refresh": refresh_token,
             }, status=status.HTTP_200_OK
         )
+
+
+# class KakaoSignInView(APIView):
+#     permission_classes = [AllowAny]
+#
+#     def post(self, request, *args, **kwargs):
+#         authorization_code = request.data.get('code')
+#
+#         url = "https://kauth.kakao.com/oauth/token"
+#         headers = {"Content-type": "application/x-www-form-urlencoded;charset=utf-8"}
+#         data = {
+#             "grant_type": "authorization_code",
+#             "client_id": env("KAKAO_REST_API_KEY"),
+#             "redirect_uri": env("KAKAO_REDIRECT_URI"),
+#             "code": authorization_code,
+#         }
+#         token_response = requests.post(url, headers=headers, data=data)
+#         token_response_json = token_response.json()
+#         access_token = token_response_json.get('access_token')
+#
+#         if not access_token:
+#             return Response(
+#                 data={
+#                     "message": "엑세스 토큰이 필요합니다."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#
+#         headers = {"Authorization": f"Bearer {access_token}"}
+#         url = "https://kapi.kakao.com/v2/user/me"
+#         response = requests.get(url, headers=headers)
+#
+#         if response.status_code != 200:
+#             return Response(
+#                 data={
+#                     "message": "카카오 계정 정보를 불러오지 못했습니다."
+#                 },
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#         user_info = response.json()
+#
+#         email = user_info.get('kakao_account').get('email')
+#         user = CustomUser.objects.filter(email=email).first()
+#
+#         if not user:
+#             user = CustomUser.objects.create(
+#                 email=email,
+#                 nickname=user_info.get('properties').get('nickname'),
+#                 is_social=True
+#             )
+#             user.set_unusable_password()
+#             user.save()
+#
+#         token = MyTokenObtainPairSerializer.get_token(user)
+#         refresh_token = str(token)
+#         access_token = str(token.access_token)
+#
+#         return Response(
+#             data={
+#                 "message": "Successfully Sign In",
+#                 "access": access_token,
+#                 "refresh": refresh_token
+#             },
+#             status=status.HTTP_200_OK
+#         )
 
 
 class SignOutAPIView(APIView):
