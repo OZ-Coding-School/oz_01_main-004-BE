@@ -34,7 +34,7 @@ CUSTOM_USER_APPS = [
     # "comments.apps.CommentsConfig",
     "users.apps.UsersConfig",
     # "recipes.apps.RecipesConfig",
-    # "foods.apps.FoodsConfig",
+    "foods.apps.FoodsConfig",
     # "favorite.apps.FavoriteConfig",
     "chat.apps.ChatConfig",
 ]
