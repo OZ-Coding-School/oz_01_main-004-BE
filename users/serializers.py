@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -38,10 +39,43 @@ class SignInSerializer(TokenObtainPairSerializer):
         return data
 
 
+class KakaoSignInSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token["id"] = user.id
+        token["email"] = user.email
+        token["name"] = user.nickname
+
+        return token
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ["id", "email", "nickname", "profile_image", "created_at", "updated_at"]
+
+
+class UserUpdateSerializer(serializers.ModelSerializer[CustomUser]):
+    nickname = serializers.CharField(required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ("id", "email", "password", "nickname", "profile_image", "created_at", "updated_at")
+
+    @staticmethod
+    def update(instance, validated_data):
+        if validated_data.get("nickname", "") != "":
+            instance.nickname = validated_data.get("nickname")
+
+        if validated_data.get("password", "") != "":
+            password = validated_data["password"]
+            instance.password = make_password(password)
+
+        instance.save()
+        return instance
 
 
 class UserProfileImageSerializer(serializers.ModelSerializer):
