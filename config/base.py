@@ -31,6 +31,7 @@ THIRD_PARTY_APPS = [
 ]
 
 CUSTOM_USER_APPS = [
+    "daphne",
     "common.apps.CommonConfig",
     # "comments.apps.CommentsConfig",
     "users.apps.UsersConfig",
@@ -88,6 +89,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],  # 레디스 호스트 및 포트 설정
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

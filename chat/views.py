@@ -1,7 +1,6 @@
 from rest_framework import generics, permissions, status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
+from rest_framework.views import APIView
 from .models import ChatFile, ChatMessage, ChatRoom
 from .serializers import (
     ChatFileSerializer,
@@ -116,7 +115,8 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
         # 채팅방 ID 가져오기
         chatroom_id = request.data.get("room")
         sender_id = request.data.get("sender")
-        message_file = request.data.get("file")
+        message_file = request.FILES.get("file_url")  # 파일 객체 가져오기
+        file_name = message_file.name  # 파일 이름 가져오기
 
         # 채팅방 객체 가져오기
         try:
@@ -133,6 +133,19 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
 
         return super().create(request, *args, **kwargs)
 
+        # # ChatFileSerializer를 사용하여 데이터 생성
+        # serializer = ChatFileSerializer(data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # def get(self, request, *args, **kwargs):
+    #     # 최근에 생성된 ChatFile 모델의 객체를 가져와서 시리얼라이즈
+    #     queryset = ChatFile.objects.filter(sender=request.user).order_by('-created_at')[:1]
+    #     serializer = ChatFileSerializer(queryset, many=True)
+    #     return Response(serializer.data)
+
 
 class ChatFileDeleteAPIView(generics.DestroyAPIView):
     queryset = ChatFile.objects.all()
@@ -140,20 +153,19 @@ class ChatFileDeleteAPIView(generics.DestroyAPIView):
     permission_classes = [permissions.IsAuthenticated, IsSender]
 
 
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
+from users.models import CustomUser
 
 
 class LeaveChatRoomAPIView(APIView):
     """
     사용자를 채팅방에서 나가게 하는 API 뷰
     """
+    permission_classes = [permissions.IsAuthenticated, IsParticipant]
 
     def delete(self, request, chatroom_id, participant_id):
         try:
             chat_room = ChatRoom.objects.get(pk=chatroom_id)
-            participant = User.objects.get(pk=participant_id)
+            participant = CustomUser.objects.get(pk=participant_id)
 
             if participant in chat_room.participant.all():
                 chat_room.participant.remove(participant)
@@ -168,7 +180,7 @@ class LeaveChatRoomAPIView(APIView):
                 {"error": "해당 ID를 가진 채팅방이 존재하지 않습니다."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response(
                 {"error": "해당 ID를 가진 사용자가 존재하지 않습니다."},
                 status=status.HTTP_404_NOT_FOUND,
