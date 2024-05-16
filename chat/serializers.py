@@ -1,6 +1,5 @@
 from operator import attrgetter
 
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from .models import ChatFile, ChatMessage, ChatRoom
@@ -57,3 +56,18 @@ class ChatRoomNameUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
         fields = ("name",)
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    messages = serializers.SerializerMethodField()
+
+    def get_messages(self, obj):
+        messages = list(obj.chatmessage_set.all()) + list(obj.chatmessagefile_set.all())
+        sorted_messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
+        serialized_data = []
+        for message in sorted_messages:
+            if isinstance(message, ChatMessage):
+                serialized_data.append(ChatMessageSerializer(message).data)
+            elif isinstance(message, ChatFile):
+                serialized_data.append(ChatFileSerializer(message).data)
+        return serialized_data
