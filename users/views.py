@@ -24,20 +24,30 @@ class SignUpAPIView(APIView):
     serializer_class = SignUpSerializer
 
     def post(self, request):
-        email = request.data.get("email")
-        user = CustomUser.objects.filter(email=email).exists()
-        if user:
-            return Response(
-                data={
-                    "message": "이미 등록된 이메일 입니다.",
-                },
-                status=status.HTTP_409_CONFLICT,
-            )
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(data={"message": "Successfully Sign Up"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class EmailCheckAPIView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        user = CustomUser.objects.filter(email=email).exists()
+        if not user:
+            return Response(
+                data={
+                    "message": "사용 가능한 이메일 주소 입니다."
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data={
+                "message": "중복된 이메일 주소 입니다."
+            },
+            status=status.HTTP_409_CONFLICT
+        )
 
 
 class SignInAPIView(TokenObtainPairView):

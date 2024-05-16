@@ -12,6 +12,7 @@ from .views import (
 
 urlpatterns = [
     path("sign-up/", SignUpAPIView.as_view(), name="sign-up"),
+    path("email-check/", SignUpAPIView.as_view(), name="sign-up"),
     path("sign-in/", SignInAPIView.as_view(), name="sign-in"),
     path("kakao/sign-in/", KakaoSignInView.as_view(), name="kakao-sign-in"),
     path("sign-out/", SignOutAPIView.as_view(), name="sign-out"),

@@ -72,8 +72,9 @@ class UserUpdateSerializer(serializers.ModelSerializer[CustomUser]):
 
         if validated_data.get("password", "") != "":
             password = validated_data["password"]
-            instance.password = make_password(password)
-
+            if instance.check_password(password):
+                raise serializers.ValidationError({"message": "이미 사용중인 비밀번호 입니다."})
+            instance.set_password(password)
         instance.save()
         return instance
 
