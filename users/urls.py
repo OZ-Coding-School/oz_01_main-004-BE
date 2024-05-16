@@ -5,6 +5,7 @@ from .views import (
     KakaoSignInView,
     SignOutAPIView,
     SignUpAPIView,
+    EmailCheckAPIView,
     TokenRefreshView,
     UserDetailView,
     UserProfileImageView,
@@ -12,7 +13,7 @@ from .views import (
 
 urlpatterns = [
     path("sign-up/", SignUpAPIView.as_view(), name="sign-up"),
-    path("email-check/", SignUpAPIView.as_view(), name="sign-up"),
+    path("email-check/", EmailCheckAPIView.as_view(), name="email-check"),
     path("sign-in/", SignInAPIView.as_view(), name="sign-in"),
     path("kakao/sign-in/", KakaoSignInView.as_view(), name="kakao-sign-in"),
     path("sign-out/", SignOutAPIView.as_view(), name="sign-out"),
