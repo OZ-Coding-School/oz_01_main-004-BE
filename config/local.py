@@ -7,26 +7,17 @@ ALLOWED_HOSTS = ["*"]
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "HOST": env("DB_HOST"),
-#         "NAME": env("DB_NAME"),
-#         "USER": env("DB_USER"),
-#         "PASSWORD": env("DB_PASSWORD"),
-#         "PORT": env("DB_PORT"),
-#     }
-# }
-
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-        "TEST": {
-            "NAME": BASE_DIR / "db.sqlite3",
-        },
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": env("DB_HOST"),
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "PORT": env("DB_PORT"),
     }
 }
+
 
 
 # CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
