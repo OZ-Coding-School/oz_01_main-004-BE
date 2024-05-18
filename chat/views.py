@@ -9,6 +9,13 @@ from .serializers import (
     ChatRoomNameUpdateSerializer,
     ChatRoomSerializer,
 )
+from users.models import CustomUser
+from django.db.models import Prefetch
+from rest_framework.pagination import PageNumberPagination
+
+class MyPagination(PageNumberPagination):
+    page_size = 30
+    page_size_query_param = 'page_size'
 
 
 class IsParticipant(permissions.BasePermission):
@@ -30,21 +37,44 @@ class IsSender(permissions.BasePermission):
 
 
 class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
-    queryset = ChatRoom.objects.all()
+    queryset = ChatRoom.objects.all().prefetch_related(
+        Prefetch('participant', queryset=CustomUser.objects.only('id', 'nickname', 'email', 'profile_image')),
+        Prefetch('chatmessage_set'),
+        Prefetch('chatfile_set')
+    )
     serializer_class = ChatRoomDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
+    pagination_class = MyPagination  # 사용자 정의 페이지네이션 클래스를 설정합니다.
+
+    def get_messages(self, obj):
+        messages = list(obj.chatmessage_set.all()) + list(obj.chatfile_set.all())
+        paginator = self.pagination_class()  # 사용자 정의 페이지네이션 클래스의 인스턴스를 생성합니다.
+        page = paginator.paginate_queryset(messages, self.request)
+        if page is not None:
+            serializer = ChatMessageSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data).data
+        serializer = ChatMessageSerializer(messages, many=True)
+        return serializer.data
 
     def get_object(self):
         obj = super().get_object()
         if not obj.name:
-            participant_names = [str(user) for user in obj.participant.all()]
+            participant_names = [user.nickname for user in obj.participant.all() if
+                                 user != self.request.user]  # 현재 사용자를 제외한 다른 사용자의 닉네임만 필터링합니다.
             obj.name = ", ".join(participant_names)
         return obj
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        messages = self.get_messages(instance)  # 메시지를 가져옵니다.
+        serializer = self.get_serializer(instance)
+        return Response({**serializer.data, "messages": messages})
 
 
 # 나중에 유저 모델이 완성 되 면 이 부분 을 수정 하여 유저 네임 으로 채킹방 이름을 사용 하도록 지정 하자
 class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
-    queryset = ChatRoom.objects.all()
+    queryset = ChatRoom.objects.all().prefetch_related(
+        Prefetch('participant', queryset=CustomUser.objects.only('id', 'nickname', 'email', 'profile_image')))
     serializer_class = ChatRoomSerializer
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
 
@@ -57,7 +87,8 @@ class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
         # 채팅방 이름이 없는 경우, 참가자들의 이름으로 채팅방 이름 설정
         for chat_room in queryset:
             if not chat_room.name:
-                chat_room.name = ", ".join([str(user) for user in chat_room.participant.all()])
+                chat_room.name = ", ".join([user.nickname for user in chat_room.participant.all() if
+                                 user != self.request.user])
         return queryset
 
     def perform_create(self, serializer):

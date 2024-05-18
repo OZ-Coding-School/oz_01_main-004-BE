@@ -3,10 +3,33 @@ from operator import attrgetter
 from rest_framework import serializers
 
 from .models import ChatFile, ChatMessage, ChatRoom
+from users.models import CustomUser
+
+
+class UserChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id','nickname','email','profile_image']
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    messages = serializers.SerializerMethodField()
+
+    def get_messages(self, obj):
+        messages = list(obj.chatmessage_set.all()) + list(obj.chatfile_set.all())
+        sorted_messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
+        serialized_data = []
+        for message in sorted_messages:
+            if isinstance(message, ChatMessage):
+                serialized_data.append(ChatMessageSerializer(message).data)
+            elif isinstance(message, ChatFile):
+                serialized_data.append(ChatFileSerializer(message).data)
+        return serialized_data
 
 
 class ChatFileSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(queryset=ChatRoom.objects.all())
+    sender_data = UserChatSerializer(source='sender', read_only=True)
 
     class Meta:
         model = ChatFile
@@ -15,6 +38,7 @@ class ChatFileSerializer(serializers.ModelSerializer):
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(queryset=ChatRoom.objects.all())
+    sender_data = UserChatSerializer(source='sender', read_only=True)
 
     class Meta:
         model = ChatMessage
@@ -22,21 +46,23 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
+    participant_data = UserChatSerializer(source='participant', many=True)
 
     class Meta:
         model = ChatRoom
-        fields = "__all__"
+        fields = ['id', 'name', 'created_at', 'participant_data']
 
 
 class ChatRoomDetailSerializer(serializers.ModelSerializer):
+    participant_data = UserChatSerializer(source='participant', many=True)
     messages = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
-        fields = "__all__"
+        fields = ['id', 'name', 'created_at', 'participant_data', 'messages']
 
     def get_messages(self, obj):
-        messages = list(obj.chatmessage_set.all()) + list(obj.chatmessagefile_set.all())
+        messages = list(obj.chatmessage_set.all()) + list(obj.chatfile_set.all())
         sorted_messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
         serialized_data = []
         for message in sorted_messages:
@@ -58,16 +84,3 @@ class ChatRoomNameUpdateSerializer(serializers.ModelSerializer):
         fields = ("name",)
 
 
-class MessageSerializer(serializers.ModelSerializer):
-    messages = serializers.SerializerMethodField()
-
-    def get_messages(self, obj):
-        messages = list(obj.chatmessage_set.all()) + list(obj.chatmessagefile_set.all())
-        sorted_messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
-        serialized_data = []
-        for message in sorted_messages:
-            if isinstance(message, ChatMessage):
-                serialized_data.append(ChatMessageSerializer(message).data)
-            elif isinstance(message, ChatFile):
-                serialized_data.append(ChatFileSerializer(message).data)
-        return serialized_data
