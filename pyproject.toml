@@ -16,12 +16,12 @@ psycopg2 = "^2.9.9"
 pillow = "^10.3.0"
 gunicorn = "^22.0.0"
 requests = "^2.31.0"
-boto3 = "^1.34.98"
 channels = "^4.1.0"
 daphne = "^4.1.2"
 channels-redis = "^4.2.0"
 django-storages = "^1.14.3"
 django-cleanup = "^8.1.0"
+boto3 = "^1.34.107"
 
 [tool.black]
 line-length = 120
