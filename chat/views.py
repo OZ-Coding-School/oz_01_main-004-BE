@@ -14,7 +14,7 @@ from django.db.models import Prefetch
 from rest_framework.pagination import PageNumberPagination
 
 class MyPagination(PageNumberPagination):
-    page_size = 30
+    page_size = 1
     page_size_query_param = 'page_size'
 
 
@@ -46,15 +46,13 @@ class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
     pagination_class = MyPagination  # 사용자 정의 페이지네이션 클래스를 설정합니다.
 
-    def get_messages(self, obj):
-        messages = list(obj.chatmessage_set.all()) + list(obj.chatfile_set.all())
-        paginator = self.pagination_class()  # 사용자 정의 페이지네이션 클래스의 인스턴스를 생성합니다.
+
+    def get_paginated_messages(self, messages):
+        paginator = self.pagination_class()
         page = paginator.paginate_queryset(messages, self.request)
         if page is not None:
-            serializer = ChatMessageSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data).data
-        serializer = ChatMessageSerializer(messages, many=True)
-        return serializer.data
+            return paginator.get_paginated_response(page).data
+        return messages
 
     def get_object(self):
         obj = super().get_object()
@@ -64,11 +62,18 @@ class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
             obj.name = ", ".join(participant_names)
         return obj
 
+
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
-        messages = self.get_messages(instance)  # 메시지를 가져옵니다.
         serializer = self.get_serializer(instance)
-        return Response({**serializer.data, "messages": messages})
+
+        # 시리얼라이저에서 정렬된 메시지를 가져옴
+        sorted_messages = serializer.get_messages(instance)
+
+        # 페이지네이션 적용
+        paginated_messages = self.get_paginated_messages(sorted_messages)
+
+        return Response({**serializer.data, "messages": paginated_messages})
 
 
 # 나중에 유저 모델이 완성 되 면 이 부분 을 수정 하여 유저 네임 으로 채킹방 이름을 사용 하도록 지정 하자
