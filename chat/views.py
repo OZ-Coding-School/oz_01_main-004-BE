@@ -13,6 +13,11 @@ from users.models import CustomUser
 from django.db.models import Prefetch
 from rest_framework.pagination import PageNumberPagination
 
+from django.db.models import Max, F
+from django.db.models.functions import Coalesce
+from operator import attrgetter
+
+
 class MyPagination(PageNumberPagination):
     page_size = 1
     page_size_query_param = 'page_size'
@@ -39,8 +44,8 @@ class IsSender(permissions.BasePermission):
 class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
     queryset = ChatRoom.objects.all().prefetch_related(
         Prefetch('participant', queryset=CustomUser.objects.only('id', 'nickname', 'email', 'profile_image')),
-        Prefetch('chatmessage_set'),
-        Prefetch('chatfile_set')
+        Prefetch('messages'),
+        Prefetch('files')
     )
     serializer_class = ChatRoomDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
@@ -84,16 +89,26 @@ class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
         user = self.request.user
 
-        # 참여한 채팅방만 필터링
-        queryset = queryset.filter(participant=user)
+        # 최신 메시지 및 파일 생성 시간을 가져옵니다.
+        queryset = ChatRoom.objects.filter(participant=user).annotate(
+            latest_message_time=Coalesce(Max('messages__created_at'), F('created_at')),
+            latest_file_time=Coalesce(Max('files__created_at'), F('created_at'))
+        )
+
+        # 최신 데이터를 비교하여 정렬합니다.
+        queryset = sorted(queryset, key=lambda x: max(x.latest_message_time, x.latest_file_time) if
+                          (x.latest_message_time or x.latest_file_time) else x.created_at,
+                          reverse=True)
+
+
         # 채팅방 이름이 없는 경우, 참가자들의 이름으로 채팅방 이름 설정
         for chat_room in queryset:
             if not chat_room.name:
                 chat_room.name = ", ".join([user.nickname for user in chat_room.participant.all() if
                                  user != self.request.user])
+
         return queryset
 
     def perform_create(self, serializer):
