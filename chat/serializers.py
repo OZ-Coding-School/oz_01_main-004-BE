@@ -46,11 +46,23 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
-    participant_data = UserChatSerializer(source='participant', many=True)
+    participant_data = UserChatSerializer(source='participant', many=True, read_only=True)
+    participant = serializers.ListField(
+        child=serializers.IntegerField(), write_only=True, required=True
+    )
 
     class Meta:
         model = ChatRoom
-        fields = ['id', 'name', 'created_at', 'participant_data']
+        fields = ['id', 'name', 'created_at', 'participant_data', 'participant']
+        extra_kwargs = {
+            'participant': {'write_only': True}
+        }
+
+    def create(self, validated_data):
+        participants = validated_data.pop('participant', [])
+        chat_room = ChatRoom.objects.create(**validated_data)
+        chat_room.participant.set(participants)
+        return chat_room
 
 
 class ChatRoomDetailSerializer(serializers.ModelSerializer):
