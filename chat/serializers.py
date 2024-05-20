@@ -6,6 +6,7 @@ from .models import ChatFile, ChatMessage, ChatRoom
 from users.models import CustomUser
 
 
+
 class UserChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -16,7 +17,7 @@ class MessageSerializer(serializers.ModelSerializer):
     messages = serializers.SerializerMethodField()
 
     def get_messages(self, obj):
-        messages = list(obj.chatmessage_set.all()) + list(obj.chatfile_set.all())
+        messages = list(obj.messages.all()) + list(obj.files.all())
         sorted_messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
         serialized_data = []
         for message in sorted_messages:
@@ -50,13 +51,38 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     participant = serializers.ListField(
         child=serializers.IntegerField(), write_only=True, required=True
     )
+    latest_message = serializers.SerializerMethodField()
+
 
     class Meta:
         model = ChatRoom
-        fields = ['id', 'name', 'created_at', 'participant_data', 'participant']
+        fields = ['id', 'name', 'created_at', 'participant_data', 'participant', 'latest_message']
         extra_kwargs = {
             'participant': {'write_only': True}
         }
+
+    def get_latest_message(self, obj):
+        # 가장 최신의 메시지와 파일을 찾습니다.
+        latest_message = obj.messages.order_by('-created_at').first()
+        latest_file = obj.files.order_by('-created_at').first()
+
+        # 최신 메시지와 파일 중에서 더 최신인 것을 선택합니다.
+        latest = None
+        if latest_message and latest_file:
+            latest = latest_message if latest_message.created_at > latest_file.created_at else latest_file
+        elif latest_message:
+            latest = latest_message
+        elif latest_file:
+            latest = latest_file
+
+        # 최신 메시지가 있으면 시리얼라이즈하여 반환합니다.
+        if latest:
+            if isinstance(latest, ChatMessage):
+                return ChatMessageSerializer(latest).data
+            elif isinstance(latest, ChatFile):
+                return ChatFileSerializer(latest).data
+
+        return None
 
     def create(self, validated_data):
         participants = validated_data.pop('participant', [])
@@ -74,7 +100,7 @@ class ChatRoomDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'created_at', 'participant_data', 'messages']
 
     def get_messages(self, obj):
-        messages = list(obj.chatmessage_set.all()) + list(obj.chatfile_set.all())
+        messages = list(obj.messages.all()) + list(obj.files.all())
         sorted_messages = sorted(messages, key=lambda x: x.created_at, reverse=True)
         serialized_data = []
         for message in sorted_messages:
