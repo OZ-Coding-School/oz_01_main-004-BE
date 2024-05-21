@@ -11,6 +11,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - django
+      - daphne
 
   django:
     build: .
@@ -21,3 +22,19 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    command: >
+      sh -c "echo 'Starting Gunicorn' &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 4"
+
+  daphne:
+    build: .
+    image: swanycastle/daphne:latest
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    ports:
+      - "9000:9000"
+    command: >
+      sh -c "echo 'Starting Daphne' &&
+             daphne -b 0.0.0.0 -p 9000 config.asgi:application"
