@@ -9,7 +9,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # 웹소켓 연결 시 실행되는 메서드
         self.room_id = self.scope["url_route"]["kwargs"]["room_id"]
-        self.room_group_name = "chat_%s" % self.room_id
+        self.room_group_name = f"chat_{self.room_id}"
 
         # 채팅방 그룹에 참여
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
