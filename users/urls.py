@@ -19,5 +19,5 @@ urlpatterns = [
     path("sign-out/", SignOutAPIView.as_view(), name="sign-out"),
     path("detail/", UserDetailView.as_view(), name="user-detail"),
     path("token-refresh/", TokenRefreshView.as_view(), name="token-refresh"),
-    path("profile-image", UserProfileImageView.as_view(), name="profile-image"),
+    path("profile-image/", UserProfileImageView.as_view(), name="profile-image"),
 ]

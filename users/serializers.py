@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -32,6 +31,8 @@ class SignInSerializer(TokenObtainPairSerializer):
 
         if not user:
             raise AuthenticationFailed("잘못된 이메일 또는 비밀번호입니다.")
+
+        user = CustomUser.objects.filter(email=email).first()
 
         data["email"] = user.email
         data["user_id"] = user.id
