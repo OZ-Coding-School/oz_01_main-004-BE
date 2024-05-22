@@ -26,6 +26,7 @@ urlpatterns = [
     path("api/v1/foods/", include("foods.urls")),
     path("api/v1/recipes/", include("recipes.urls")),
     path("api/v1/chat/", include("chat.urls")),
+    path("api/v1/comments/", include("comments.urls")),
 ]
 # 미디어 파일에 대한 URL 패턴 추가
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
