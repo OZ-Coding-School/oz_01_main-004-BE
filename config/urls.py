@@ -24,6 +24,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v1/users/", include("users.urls")),
     path("api/v1/foods/", include("foods.urls")),
+    path("api/v1/recipes/", include("recipes.urls")),
     path("api/v1/chat/", include("chat.urls")),
 ]
 # 미디어 파일에 대한 URL 패턴 추가
