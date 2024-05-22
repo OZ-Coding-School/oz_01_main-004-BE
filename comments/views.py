@@ -12,7 +12,7 @@ class CommentListCreateAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, recipe_id):
-        comments = Comment.objects.filter(id=recipe_id)
+        comments = Comment.objects.filter(recipe_id=recipe_id)
         serializer = CommentSerializer(comments, many=True)
         return Response({"message": "Successfully Read Comments", "comment_list": serializer.data},
                         status=status.HTTP_200_OK)
@@ -28,19 +28,6 @@ class CommentListCreateAPIView(APIView):
             serializer.save(user=request.user, recipe=recipe)
             return Response({"message": "Successfully Create Comment"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class RecipeCommentListAPIView(APIView):
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get(self, request, recipe_id):
-        comments = Comment.objects.filter(recipe_id=recipe_id)
-        if not comments.exists():
-            return Response({"message_list": "No comments found for this recipe"}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = CommentSerializer(comments, many=True)
-        return Response({"message_list": "Successfully Read Comments", "comment_list": serializer.data},
-                        status=status.HTTP_200_OK)
 
 
 class CommentDetailAPIView(APIView):
