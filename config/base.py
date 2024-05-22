@@ -97,7 +97,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],  # 레디스 호스트 및 포트 설정
+            "hosts": [('oz_01_main-004-be-redis-1', 6379)],  # Docker 컨테이너의 이름으로 호스트 지정
         },
     },
 }

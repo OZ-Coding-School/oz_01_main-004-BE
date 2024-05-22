@@ -38,3 +38,8 @@ services:
     command: >
       sh -c "echo 'Starting Daphne' &&
              daphne -b 0.0.0.0 -p 9000 config.asgi:application"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
