@@ -33,11 +33,11 @@ THIRD_PARTY_APPS = [
 CUSTOM_USER_APPS = [
     "daphne",
     "common.apps.CommonConfig",
-    # "comments.apps.CommentsConfig",
+    "comments.apps.CommentsConfig",
     "users.apps.UsersConfig",
-    # "recipes.apps.RecipesConfig",
+    "recipes.apps.RecipesConfig",
     "foods.apps.FoodsConfig",
-    # "favorite.apps.FavoriteConfig",
+    "favorite.apps.FavoriteConfig",
     "chat.apps.ChatConfig",
 ]
 
@@ -47,6 +47,8 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 16
 }
 
 SIMPLE_JWT = {
