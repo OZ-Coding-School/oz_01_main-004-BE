@@ -193,6 +193,27 @@ class UserProfileImageView(APIView):
 
     def patch(self, request):
         user = request.user
+        image_file = request.FILES.get('profile_image')
+        if not image_file:
+            return Response(
+                data={
+                    "message": "이미지 파일이 제공되지 않았습니다."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        file_size = image_file.size
+        max_size_mb = 10
+        max_size_bytes = max_size_mb * 1024 * 1024
+
+        if file_size > max_size_bytes:
+            return Response(
+                data={
+                    "message": "이 파일의 크기는 10MB를 초과합니다."
+                },
+                status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+            )
+
         serializer = self.serializer_class(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
