@@ -160,8 +160,9 @@ class RecipeDetailAPIView(APIView):
 class RecipeImageAPIView(APIView):
     serializer_class = RecipeImageSerializer
 
-    def post(self, request, recipe_id):
-        serializer = self.serializer_class(data=request.data, context={"recipe_id": recipe_id})
+    def post(self, request):
+        # serializer = self.serializer_class(data=request.data, context={"recipe_id": recipe_id})
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(

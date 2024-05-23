@@ -19,5 +19,5 @@ class Recipe(Common):
 
 
 class RecipeImage(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    # recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     image = models.ImageField(upload_to="recipe/content/")

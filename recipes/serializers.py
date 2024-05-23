@@ -85,8 +85,8 @@ class RecipeImageSerializer(serializers.ModelSerializer):
         model = RecipeImage
         fields = ["image"]
 
-    def create(self, validated_data):
-        recipe_id = self.context.get("recipe_id")
-        recipe = Recipe.objects.filter(pk=recipe_id).first()
-        validated_data["recipe"] = recipe
-        return RecipeImage.objects.create(**validated_data)
+    # def create(self, validated_data):
+    #     recipe_id = self.context.get("recipe_id")
+    #     recipe = Recipe.objects.filter(pk=recipe_id).first()
+    #     validated_data["recipe"] = recipe
+    #     return RecipeImage.objects.create(**validated_data)
