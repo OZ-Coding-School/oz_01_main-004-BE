@@ -16,7 +16,7 @@ class FoodTypeList(generics.ListAPIView[FoodType]):
 
 
 class FoodIngredientList(generics.ListAPIView[FoodIngredient]):
-    queryset = FoodIngredient.objects.all()
+    queryset = FoodIngredient.objects.all().order_by("id")
     serializer_class = FoodIngredientSerializer
 
     def list(self, request, *args, **kwargs):

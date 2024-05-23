@@ -7,10 +7,16 @@ from .models import Comment
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    # user = UserSerializer()
-    # recipe = RecipeSerializer()
-    content = serializers.CharField(max_length=200)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ["id", "user", "recipe", "content", "created_at", "updated_at"]
+        fields = ["id", "user", "content", "created_at", "updated_at"]
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user
+        recipe = request.data.get("recipe")
+        validated_data["user"] = user
+        validated_data["recipe"] = recipe
+        return Comment.objects.create(**validated_data)
