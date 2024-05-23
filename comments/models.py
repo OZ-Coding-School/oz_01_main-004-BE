@@ -1,7 +1,8 @@
 from django.db import models
+
 from common.models import Common
-from users.models import CustomUser
 from recipes.models import Recipe
+from users.models import CustomUser
 
 
 class Comment(Common):

@@ -1,11 +1,11 @@
 from django.urls import path
 
 from .views import (
-    SignInAPIView,
+    EmailCheckAPIView,
     KakaoSignInView,
+    SignInAPIView,
     SignOutAPIView,
     SignUpAPIView,
-    EmailCheckAPIView,
     TokenRefreshView,
     UserDetailView,
     UserProfileImageView,

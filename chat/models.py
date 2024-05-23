@@ -18,7 +18,7 @@ class ChatRoom(models.Model):
 
 
 class ChatMessage(models.Model):
-    room = models.ForeignKey(ChatRoom, related_name='messages', on_delete=models.CASCADE)
+    room = models.ForeignKey(ChatRoom, related_name="messages", on_delete=models.CASCADE)
     sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -29,7 +29,7 @@ class ChatMessage(models.Model):
 
 
 class ChatFile(models.Model):
-    room = models.ForeignKey(ChatRoom, related_name='files', on_delete=models.CASCADE)
+    room = models.ForeignKey(ChatRoom, related_name="files", on_delete=models.CASCADE)
     sender = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True)
     file_name = models.CharField(max_length=225, blank=True, null=True)
     file_url = models.FileField(upload_to="chat_files/")

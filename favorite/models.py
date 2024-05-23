@@ -1,7 +1,8 @@
 from django.db import models
+
 from common.models import Common
-from users.models import CustomUser
 from recipes.models import Recipe
+from users.models import CustomUser
 
 
 class Favorite(Common):
@@ -9,4 +10,4 @@ class Favorite(Common):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('user', 'recipe')
+        unique_together = ("user", "recipe")
