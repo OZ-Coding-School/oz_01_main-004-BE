@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from .models import Comment
 from .serializers import CommentSerializer
 from recipes.models import Recipe
@@ -25,6 +25,9 @@ class CommentListCreateAPIView(APIView):
 
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
+            if len(serializer.validated_data.get('content', '')) > 200:
+                raise ValidationError("Content length exceeds the maximum allowed length of 200 characters.")
+
             serializer.save(user=request.user, recipe=recipe)
             return Response({"message": "Successfully Create Comment"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
