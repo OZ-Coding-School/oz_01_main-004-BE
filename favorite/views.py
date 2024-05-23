@@ -16,7 +16,7 @@ class FavoriteListAPIView(APIView):
 
     def get(self, request):
         favorites = Favorite.objects.filter(user=request.user)
-        serializer = self.serializer_class(favorites, many=True)
+        serializer = self.serializer_class(favorites, many=True, context={'request': request})
         return Response(
             data={"message": "Successfully Read Favorite list", "favorite_list": serializer.data},
             status=status.HTTP_200_OK,
