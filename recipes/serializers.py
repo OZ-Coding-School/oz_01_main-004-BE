@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Recipe
+from .models import Recipe, RecipeImage
 from foods.serializers import FoodTypeSerializer, FoodIngredientSerializer
 from users.serializers import UserSerializer
 from foods.models import FoodType, FoodIngredient
@@ -11,6 +11,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     food_type = FoodTypeSerializer(read_only=True)
     food_ingredient = FoodIngredientSerializer(read_only=True)
+    is_favorite = serializers.SerializerMethodField()
     favorites_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
 
@@ -25,6 +26,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             "food_type",
             "food_ingredient",
             "level",
+            "is_favorite",
             "favorites_count",
             "comments_count",
             "created_at",
@@ -39,8 +41,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         validated_data["user"] = request.user
         validated_data["food_type"] = FoodType.objects.filter(pk=food_type_id).first()
         validated_data["food_ingredient"] = FoodIngredient.objects.filter(pk=food_ingredient_id).first()
-        recipe = Recipe.objects.create(**validated_data)
-        return recipe
+        return Recipe.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         if validated_data.get("title", "") != "":
@@ -69,4 +70,21 @@ class RecipeSerializer(serializers.ModelSerializer):
     def get_favorites_count(self, obj):
         return Favorite.objects.filter(recipe=obj).count()
 
+    def get_is_favorite(self, obj):
+        request = self.context.get("request")
+        user = request.user
+        if user.is_authenticated:
+            return Favorite.objects.filter(user=user, recipe=obj).exists()
+        return False
 
+
+class RecipeImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecipeImage
+        fields = ["image"]
+
+    def create(self, validated_data):
+        image = validated_data.get("image")
+        # recipe_id = self.context.get("recipe_id")
+        # validated_data["image"] = str(recipe_id) + image
+        return RecipeImage.objects.create(**validated_data)
