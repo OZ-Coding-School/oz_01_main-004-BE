@@ -115,7 +115,7 @@ class RecipeMyAPIView(APIView):
                 data={"message": "Successfully Read My Recipe List", "my_recipe_list": serializer.data},
                 status=status.HTTP_200_OK,
             )
-        serializer = RecipeSerializer(page, many=True)
+        serializer = RecipeSerializer(page, many=True, context={"request": request})
         return Response(
             {
                 "message": "Successfully Read My Recipe List",
