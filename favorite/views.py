@@ -22,6 +22,11 @@ class FavoriteListAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
+class FavoriteDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FavoriteSerializer
+
     def post(self, request, recipe_id):
         recipe = Recipe.objects.filter(pk=recipe_id).first()
         if not recipe:
@@ -35,17 +40,19 @@ class FavoriteListAPIView(APIView):
         if serializer.is_valid():
             try:
                 serializer.save()
+                return Response(
+                    data={
+                        "message": "Successfully Created Favorite",
+                    },
+                    status=status.HTTP_201_CREATED
+                )
             except IntegrityError:
                 return Response(data={"message": "이미 찜한 게시물 입니다."}, status=status.HTTP_400_BAD_REQUEST)
-            return Response(data={"message": "Successfully Created Favorite"}, status=status.HTTP_201_CREATED)
         return Response(data={"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
-class FavoriteDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, favorite_id):
-        favorite = Favorite.objects.filter(pk=favorite_id).first()
+    def delete(self, request, recipe_id):
+        user = request.user
+        favorite = Favorite.objects.filter(recipe_id=recipe_id, user_id=user.id).first()
         if not favorite:
             return Response(data={"message": "Favorite Not Found"}, status=status.HTTP_404_NOT_FOUND)
         favorite.delete()
