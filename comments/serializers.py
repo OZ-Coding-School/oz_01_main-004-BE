@@ -1,7 +1,10 @@
 from rest_framework import serializers
-from .models import Comment
-from users.serializers import UserSerializer
+
 from recipes.serializers import RecipeSerializer
+from users.serializers import UserSerializer
+
+from .models import Comment
+
 
 class CommentSerializer(serializers.ModelSerializer):
     # user = UserSerializer()
@@ -10,4 +13,4 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'user', 'recipe', 'content', 'created_at', 'updated_at']
+        fields = ["id", "user", "recipe", "content", "created_at", "updated_at"]

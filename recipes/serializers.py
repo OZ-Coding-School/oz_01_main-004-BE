@@ -1,10 +1,12 @@
 from rest_framework import serializers
-from .models import Recipe, RecipeImage
-from foods.serializers import FoodTypeSerializer, FoodIngredientSerializer
-from users.serializers import UserSerializer
-from foods.models import FoodType, FoodIngredient
+
 from comments.models import Comment
 from favorite.models import Favorite
+from foods.models import FoodIngredient, FoodType
+from foods.serializers import FoodIngredientSerializer, FoodTypeSerializer
+from users.serializers import UserSerializer
+
+from .models import Recipe, RecipeImage
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -30,7 +32,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             "favorites_count",
             "comments_count",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]
         depth = 1
 
