@@ -16,3 +16,8 @@ class Recipe(Common):
 
     def __str__(self):
         return self.title
+
+
+class RecipeImage(models.Model):
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to="recipe/content/")

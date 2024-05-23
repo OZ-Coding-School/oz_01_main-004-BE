@@ -1,5 +1,6 @@
 import aiohttp
 import json
+
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import ChatFile,ChatRoom
@@ -113,9 +114,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         latest_file = await self.get_latest_file_data(user_id)
         if latest_file:
             file_url = latest_file.file_url
-            await self.send(text_data=json.dumps({
-                'file_url': file_url
-            }))
+            await self.send(text_data=json.dumps({"file_url": file_url}))
 
     @sync_to_async
     def get_latest_file_data(self, user_id):

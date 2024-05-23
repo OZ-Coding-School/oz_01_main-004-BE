@@ -1,6 +1,14 @@
+from operator import attrgetter
+
+from django.db.models import F, Max, Prefetch
+from django.db.models.functions import Coalesce
 from rest_framework import generics, permissions, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from users.models import CustomUser
+
 from .models import ChatFile, ChatMessage, ChatRoom
 from .serializers import (
     ChatFileSerializer,
@@ -9,18 +17,11 @@ from .serializers import (
     ChatRoomNameUpdateSerializer,
     ChatRoomSerializer,
 )
-from users.models import CustomUser
-from django.db.models import Prefetch
-from rest_framework.pagination import PageNumberPagination
-
-from django.db.models import Max, F
-from django.db.models.functions import Coalesce
-from operator import attrgetter
 
 
 class MyPagination(PageNumberPagination):
     page_size = 1
-    page_size_query_param = 'page_size'
+    page_size_query_param = "page_size"
 
 
 class IsParticipant(permissions.BasePermission):
@@ -43,14 +44,13 @@ class IsSender(permissions.BasePermission):
 
 class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
     queryset = ChatRoom.objects.all().prefetch_related(
-        Prefetch('participant', queryset=CustomUser.objects.only('id', 'nickname', 'email', 'profile_image')),
-        Prefetch('messages'),
-        Prefetch('files')
+        Prefetch("participant", queryset=CustomUser.objects.only("id", "nickname", "email", "profile_image")),
+        Prefetch("messages"),
+        Prefetch("files"),
     )
     serializer_class = ChatRoomDetailSerializer
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
     pagination_class = MyPagination  # 사용자 정의 페이지네이션 클래스를 설정합니다.
-
 
     def get_paginated_messages(self, messages):
         paginator = self.pagination_class()
@@ -62,11 +62,11 @@ class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
     def get_object(self):
         obj = super().get_object()
         if not obj.name:
-            participant_names = [user.nickname for user in obj.participant.all() if
-                                 user != self.request.user]  # 현재 사용자를 제외한 다른 사용자의 닉네임만 필터링합니다.
+            participant_names = [
+                user.nickname for user in obj.participant.all() if user != self.request.user
+            ]  # 현재 사용자를 제외한 다른 사용자의 닉네임만 필터링합니다.
             obj.name = ", ".join(participant_names)
         return obj
-
 
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -84,7 +84,8 @@ class ChatRoomRetrieveAPIView(generics.RetrieveAPIView):
 # 나중에 유저 모델이 완성 되 면 이 부분 을 수정 하여 유저 네임 으로 채킹방 이름을 사용 하도록 지정 하자
 class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
     queryset = ChatRoom.objects.all().prefetch_related(
-        Prefetch('participant', queryset=CustomUser.objects.only('id', 'nickname', 'email', 'profile_image')))
+        Prefetch("participant", queryset=CustomUser.objects.only("id", "nickname", "email", "profile_image"))
+    )
     serializer_class = ChatRoomSerializer
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
 
@@ -93,21 +94,27 @@ class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
 
         # 최신 메시지 및 파일 생성 시간을 가져옵니다.
         queryset = ChatRoom.objects.filter(participant=user).annotate(
-            latest_message_time=Coalesce(Max('messages__created_at'), F('created_at')),
-            latest_file_time=Coalesce(Max('files__created_at'), F('created_at'))
+            latest_message_time=Coalesce(Max("messages__created_at"), F("created_at")),
+            latest_file_time=Coalesce(Max("files__created_at"), F("created_at")),
         )
 
         # 최신 데이터를 비교하여 정렬합니다.
-        queryset = sorted(queryset, key=lambda x: max(x.latest_message_time, x.latest_file_time) if
-                          (x.latest_message_time or x.latest_file_time) else x.created_at,
-                          reverse=True)
-
+        queryset = sorted(
+            queryset,
+            key=lambda x: (
+                max(x.latest_message_time, x.latest_file_time)
+                if (x.latest_message_time or x.latest_file_time)
+                else x.created_at
+            ),
+            reverse=True,
+        )
 
         # 채팅방 이름이 없는 경우, 참가자들의 이름으로 채팅방 이름 설정
         for chat_room in queryset:
             if not chat_room.name:
-                chat_room.name = ", ".join([user.nickname for user in chat_room.participant.all() if
-                                 user != self.request.user])
+                chat_room.name = ", ".join(
+                    [user.nickname for user in chat_room.participant.all() if user != self.request.user]
+                )
 
         return queryset
 
@@ -211,6 +218,7 @@ class LeaveChatRoomAPIView(APIView):
     """
     사용자를 채팅방에서 나가게 하는 API 뷰
     """
+
     permission_classes = [permissions.IsAuthenticated, IsParticipant]
 
     def delete(self, request, chatroom_id, participant_id):

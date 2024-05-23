@@ -2,15 +2,15 @@ from operator import attrgetter
 
 from rest_framework import serializers
 
-from .models import ChatFile, ChatMessage, ChatRoom
 from users.models import CustomUser
 
+from .models import ChatFile, ChatMessage, ChatRoom
 
 
 class UserChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['id','nickname','email','profile_image']
+        fields = ["id", "nickname", "email", "profile_image"]
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -30,7 +30,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ChatFileSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(queryset=ChatRoom.objects.all())
-    sender_data = UserChatSerializer(source='sender', read_only=True)
+    sender_data = UserChatSerializer(source="sender", read_only=True)
 
     class Meta:
         model = ChatFile
@@ -39,7 +39,7 @@ class ChatFileSerializer(serializers.ModelSerializer):
 
 class ChatMessageSerializer(serializers.ModelSerializer):
     room = serializers.PrimaryKeyRelatedField(queryset=ChatRoom.objects.all())
-    sender_data = UserChatSerializer(source='sender', read_only=True)
+    sender_data = UserChatSerializer(source="sender", read_only=True)
 
     class Meta:
         model = ChatMessage
@@ -47,24 +47,19 @@ class ChatMessageSerializer(serializers.ModelSerializer):
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
-    participant_data = UserChatSerializer(source='participant', many=True, read_only=True)
-    participant = serializers.ListField(
-        child=serializers.IntegerField(), write_only=True, required=True
-    )
+    participant_data = UserChatSerializer(source="participant", many=True, read_only=True)
+    participant = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=True)
     latest_message = serializers.SerializerMethodField()
-
 
     class Meta:
         model = ChatRoom
-        fields = ['id', 'name', 'created_at', 'participant_data', 'participant', 'latest_message']
-        extra_kwargs = {
-            'participant': {'write_only': True}
-        }
+        fields = ["id", "name", "created_at", "participant_data", "participant", "latest_message"]
+        extra_kwargs = {"participant": {"write_only": True}}
 
     def get_latest_message(self, obj):
         # 가장 최신의 메시지와 파일을 찾습니다.
-        latest_message = obj.messages.order_by('-created_at').first()
-        latest_file = obj.files.order_by('-created_at').first()
+        latest_message = obj.messages.order_by("-created_at").first()
+        latest_file = obj.files.order_by("-created_at").first()
 
         # 최신 메시지와 파일 중에서 더 최신인 것을 선택합니다.
         latest = None
@@ -85,19 +80,19 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         return None
 
     def create(self, validated_data):
-        participants = validated_data.pop('participant', [])
+        participants = validated_data.pop("participant", [])
         chat_room = ChatRoom.objects.create(**validated_data)
         chat_room.participant.set(participants)
         return chat_room
 
 
 class ChatRoomDetailSerializer(serializers.ModelSerializer):
-    participant_data = UserChatSerializer(source='participant', many=True)
+    participant_data = UserChatSerializer(source="participant", many=True)
     messages = serializers.SerializerMethodField()
 
     class Meta:
         model = ChatRoom
-        fields = ['id', 'name', 'created_at', 'participant_data', 'messages']
+        fields = ["id", "name", "created_at", "participant_data", "messages"]
 
     def get_messages(self, obj):
         messages = list(obj.messages.all()) + list(obj.files.all())
@@ -120,5 +115,3 @@ class ChatRoomNameUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
         fields = ("name",)
-
-
