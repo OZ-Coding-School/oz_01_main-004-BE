@@ -22,6 +22,7 @@ channels-redis = "^4.2.0"
 django-storages = "^1.14.3"
 django-cleanup = "^8.1.0"
 boto3 = "^1.34.107"
+aiohttp = "^3.9.5"
 
 [tool.black]
 line-length = 120

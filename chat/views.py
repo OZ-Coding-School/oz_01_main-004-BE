@@ -183,7 +183,7 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
             return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         # 채팅방의 참가자 목록에서 작성자 찾기
-        if sender_id not in chatroom.participant.values_list("id", flat=True):
+        if int(sender_id) not in chatroom.participant.values_list("id", flat=True):
             return Response(
                 {"error": "채팅방에 참가하지 않은 유저는 파일메시지를 작성할 수 없습니다."},
                 status=status.HTTP_403_FORBIDDEN,
