@@ -1,8 +1,10 @@
 import json
+
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import ChatFile
 from rest_framework import status
+
+from .models import ChatFile
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -23,9 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         # 채팅 메시지를 받아서 클라이언트로 전송하는 메서드
-        await self.send(text_data=json.dumps({
-            'content': event["message"]
-        }))
+        await self.send(text_data=json.dumps({"content": event["message"]}))
 
     async def file_message(self, event):
         # 파일 메시지를 받아서 클라이언트로 전송하는 메서드
@@ -33,9 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         latest_file = await self.get_latest_file_data(user_id)
         if latest_file:
             file_url = latest_file.file_url
-            await self.send(text_data=json.dumps({
-                'file_url': file_url
-            }))
+            await self.send(text_data=json.dumps({"file_url": file_url}))
 
     async def receive(self, text_data):
         # 클라이언트로부터 메시지를 받는 메서드
@@ -46,16 +44,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         status_code = 201  # 예시: 성공 상태 코드
         if status_code == status.HTTP_404_NOT_FOUND:
             # 채팅방이 없는 경우
-            await self.send(text_data=json.dumps({'error': '없는 채팅방입니다.'}))
+            await self.send(text_data=json.dumps({"error": "없는 채팅방입니다."}))
         elif status_code == status.HTTP_403_FORBIDDEN:
             # 참가자가 아닌 경우
-            await self.send(text_data=json.dumps({'error': '채팅방에 참가자가 아닙니다.'}))
+            await self.send(text_data=json.dumps({"error": "채팅방에 참가자가 아닙니다."}))
         elif status_code == status.HTTP_201_CREATED:
             # 메시지 전송
-            await self.send(text_data=text_data_json['content'])
+            await self.send(text_data=text_data_json["content"])
 
     @sync_to_async
     def get_latest_file_data(self, user_id):
         # 데이터베이스에서 최신 파일 데이터를 가져오는 메서드
-        latest_file = ChatFile.objects.filter(sender_id=user_id).order_by('-created_at').first()
+        latest_file = ChatFile.objects.filter(sender_id=user_id).order_by("-created_at").first()
         return latest_file
