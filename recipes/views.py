@@ -2,16 +2,43 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from .serializers import RecipeSerializer
+from .serializers import RecipeSerializer, RecipeImageSerializer
 from .models import Recipe
-from django.db.models import Q
+from django.db.models import Q, Count
 from rest_framework.pagination import PageNumberPagination
 
 
 class RecipePagination(PageNumberPagination):
-    page_size = 3
+    page_size = 16
     page_size_query_param = 'page_size'
     max_page_size = 100
+
+
+class RecipeMyPagePagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class RecipeMainAPIView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = RecipeSerializer
+
+    def get(self, request):
+        popular_recipes = Recipe.objects.annotate(favorites_count=Count('favorite')).order_by('-favorites_count')[:4]
+        recently_recipes = Recipe.objects.all().order_by('-created_at')[:4]
+
+        popular_serializer = self.serializer_class(popular_recipes, many=True, context={'request': request})
+        recently_serializer = self.serializer_class(recently_recipes, many=True, context={'request': request})
+
+        return Response(
+            data={
+                "message": "Successfully Read Main Recipe List",
+                "popular_recipe_list": popular_serializer.data,
+                "recently_recipe_list": recently_serializer.data
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 class RecipeListAPIView(APIView):
@@ -25,7 +52,7 @@ class RecipeListAPIView(APIView):
 
     @staticmethod
     def get_list(request):
-        recipes = Recipe.objects.all()
+        recipes = Recipe.objects.all().order_by('-created_at')
         search = request.query_params.get('search')
         if search:
             recipes = recipes.filter(
@@ -44,10 +71,10 @@ class RecipeListAPIView(APIView):
 
     def get(self, request):
         recipes = self.get_list(request)
-        paginator = RecipePagination()
+        paginator = self.pagination_class()
         page = paginator.paginate_queryset(recipes, request)
         if not page:
-            serializer = RecipeSerializer(recipes, many=True)
+            serializer = self.serializer_class(recipes, many=True, context={'request': request})
             return Response(
                 data={
                     "message": "Successfully Read Recipe List",
@@ -55,7 +82,7 @@ class RecipeListAPIView(APIView):
                 },
                 status=status.HTTP_200_OK
             )
-        serializer = RecipeSerializer(page, many=True)
+        serializer = RecipeSerializer(page, many=True, context={'request': request})
         return Response({
             "message": "Successfully Read Recipe List",
             "recipe_list": serializer.data,
@@ -80,6 +107,35 @@ class RecipeListAPIView(APIView):
         )
 
 
+class RecipeMyAPIView(APIView):
+    serializer_class = RecipeSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = RecipeMyPagePagination
+
+    def get(self, request):
+        user = request.user
+        my_recipes = Recipe.objects.filter(user_id=user.id)
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(my_recipes, request)
+        if not page:
+            serializer = self.serializer_class(my_recipes, many=True, context={'request': request})
+            return Response(
+                data={
+                    "message": "Successfully Read My Recipe List",
+                    "my_recipe_list": serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        serializer = RecipeSerializer(page, many=True)
+        return Response({
+            "message": "Successfully Read My Recipe List",
+            "recipe_list": serializer.data,
+            "count": paginator.page.paginator.count,
+            "next": paginator.get_next_link(),
+            "previous": paginator.get_previous_link()
+        })
+
+
 class RecipeDetailAPIView(APIView):
     serializer_class = RecipeSerializer
 
@@ -90,7 +146,7 @@ class RecipeDetailAPIView(APIView):
 
     def get(self, request, recipe_id):
         recipe = Recipe.objects.filter(pk=recipe_id).first()
-        serializer = self.serializer_class(recipe)
+        serializer = self.serializer_class(recipe, context={'request': request})
         return Response(
             data={
                 "message": "Successfully Read Recipe Detail",
@@ -121,3 +177,26 @@ class RecipeDetailAPIView(APIView):
         recipe = Recipe.objects.filter(pk=recipe_id).first()
         recipe.delete()
         return Response(data={"message": "Successfully Deleted Recipe."}, status=status.HTTP_200_OK)
+
+
+class RecipeImageAPIView(APIView):
+    serializer_class = RecipeImageSerializer
+
+    def post(self, request, recipe_id):
+        serializer = self.serializer_class(data=request.data, context={'recipe_id': recipe_id})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                data={
+                    "message": "Successfully Updated Recipe Image",
+                    "image_url": serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            data={
+                "message": serializer.errors,
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
