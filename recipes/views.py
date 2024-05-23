@@ -166,7 +166,7 @@ class RecipeImageAPIView(APIView):
             serializer.save()
             return Response(
                 data={"message": "Successfully Updated Recipe Image", "image_url": serializer.data},
-                status=status.HTTP_200_OK,
+                status=status.HTTP_201_CREATED,
             )
         return Response(
             data={
