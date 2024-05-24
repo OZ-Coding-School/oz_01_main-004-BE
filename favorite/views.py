@@ -50,9 +50,6 @@ class FavoriteDetailAPIView(APIView):
         return Response(data={"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, recipe_id):
-        user = request.user
-        favorite = Favorite.objects.filter(recipe_id=recipe_id, user_id=user.id).first()
-        if not favorite:
-            return Response(data={"message": "Favorite Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        favorite = get_object_or_404(Favorite, recipe_id=recipe_id, user_id=request.user.id)
         favorite.delete()
         return Response(data={"message": "Successfully Deleted Favorite"}, status=status.HTTP_200_OK)
