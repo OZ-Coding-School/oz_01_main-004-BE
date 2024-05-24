@@ -6,7 +6,9 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import ChatFile,ChatRoom
 from rest_framework import status
 from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
 
 # 메시지 읽음 상태를 저장하는 데이터 구조
 read_status = {}
@@ -15,6 +17,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'chat_{self.room_id}'
+
+        logger.info(f"Connecting to room {self.room_group_name}")
 
         # Join room group
         await self.channel_layer.group_add(
@@ -29,6 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        logger.info(f"Disconnected from room {self.room_group_name}")
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -44,6 +49,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         room_id = data['room']
         sender_id = data['sender']
         content = data['content']
+
+        logger.info(f"Handling text message: {data}")
 
         # API 호출을 통해 메시지 생성
         async with aiohttp.ClientSession() as session:
@@ -92,6 +99,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_id = data['sender']
         file_url = data['file_url']
 
+        logger.info(f"Handling text message: {data}")
+
         # API 호출을 통해 파일 메시지 저장
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -136,6 +145,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message_id = event['message_id']
         sender_id = event['sender_id']
 
+        logger.info(f"Handling text message: {event}")
+
         # 클라이언트로 메시지 전송
         await self.send(text_data=json.dumps({
             'content': message_content,
@@ -148,6 +159,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         file_url = event['file_url']
         file_id = event['file_id']
         sender_id = event['sender_id']
+
+        logger.info(f"Handling text message: {event}")
 
         # 클라이언트로 메시지 전송
         await self.send(text_data=json.dumps({

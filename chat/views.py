@@ -142,6 +142,7 @@ class ChatMessageCreateAPIView(generics.CreateAPIView):
     queryset = ChatMessage.objects.all()
     serializer_class = ChatMessageSerializer
     # permission_classes = [permissions.IsAuthenticated, IsSender]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         # 채팅방 ID 가져오기
@@ -168,13 +169,14 @@ class ChatMessageCreateAPIView(generics.CreateAPIView):
 class ChatMessageDeleteAPIView(generics.DestroyAPIView):
     queryset = ChatMessage.objects.all()
     serializer_class = ChatMessageSerializer
-    permission_classes = [permissions.IsAuthenticated, IsSender]
-
+    # permission_classes = [permissions.IsAuthenticated, IsSender]
+    permission_classes = [permissions.AllowAny]
 
 class ChatFileCreateAPIView(generics.CreateAPIView):
     queryset = ChatFile.objects.all()
     serializer_class = ChatFileSerializer
     # permission_classes = [permissions.IsAuthenticated, IsSender]
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request, *args, **kwargs):
         # 채팅방 ID 가져오기
@@ -215,8 +217,8 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
 class ChatFileDeleteAPIView(generics.DestroyAPIView):
     queryset = ChatFile.objects.all()
     serializer_class = ChatFileSerializer
-    permission_classes = [permissions.IsAuthenticated, IsSender]
-
+    # permission_classes = [permissions.IsAuthenticated, IsSender]
+    permission_classes = [permissions.AllowAny]
 
 
 class LeaveChatRoomAPIView(APIView):
