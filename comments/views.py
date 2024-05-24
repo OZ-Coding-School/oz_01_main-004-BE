@@ -14,7 +14,7 @@ class CommentListCreateAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, recipe_id):
-        comments = Comment.objects.filter(recipe_id=recipe_id)
+        comments = Comment.objects.filter(recipe_id=recipe_id).order_by('-created_at')
         serializer = CommentSerializer(comments, many=True)
         return Response(
             {"message": "Successfully Read Comments", "comment_list": serializer.data}, status=status.HTTP_200_OK
