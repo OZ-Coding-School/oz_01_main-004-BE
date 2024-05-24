@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -28,9 +29,7 @@ class FavoriteDetailAPIView(APIView):
     serializer_class = FavoriteSerializer
 
     def post(self, request, recipe_id):
-        recipe = Recipe.objects.filter(pk=recipe_id).first()
-        if not recipe:
-            return Response(data={"message": "Recipe Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
         if recipe.user == request.user:
             return Response(
                 data={"message": "내가 작성한 게시물은 찜할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST
