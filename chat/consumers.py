@@ -39,6 +39,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         elif message_type == 'file':
             await self.handle_file_message(text_data_json)
 
+
     async def handle_text_message(self, data):
         room_id = data['room']
         sender_id = data['sender']
