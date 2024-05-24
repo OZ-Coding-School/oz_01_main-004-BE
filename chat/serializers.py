@@ -4,8 +4,13 @@ from rest_framework import serializers
 
 from users.models import CustomUser
 
-from .models import ChatFile, ChatMessage, ChatRoom
+from .models import ChatFile, ChatMessage, ChatRoom, LastRead
 
+
+class LastReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LastRead
+        fields = '__all__'
 
 class UserChatSerializer(serializers.ModelSerializer):
     class Meta:
@@ -115,3 +120,4 @@ class ChatRoomNameUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
         fields = ("name",)
+

@@ -120,9 +120,16 @@ class ChatRoomListCreateAPIView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         user = self.request.user
-        participants = self.request.data.get("participant", [])  # 요청에서 참가자 목록 가져오기
-        participants.append(user.id)  # 현재 사용자도 참가자에 추가
-        serializer.save(participant=participants)  # 새로운 채팅방을 생성할 때 참가자 설정
+        participants_data = self.request.data.get("participant", [])  # 요청에서 참가자 목록 가져오기
+        participants_data.append(user.id)  # 현재 사용자도 참가자에 추가
+
+        # 채팅방 생성
+        chat_room = serializer.save()
+
+        # 참가자 추가
+        for participant_id in participants_data:
+            participant = CustomUser.objects.get(id=participant_id)
+            chat_room.participant.add(participant)
 
 
 class ChatRoomNameRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
@@ -210,8 +217,6 @@ class ChatFileDeleteAPIView(generics.DestroyAPIView):
     serializer_class = ChatFileSerializer
     permission_classes = [permissions.IsAuthenticated, IsSender]
 
-
-from users.models import CustomUser
 
 
 class LeaveChatRoomAPIView(APIView):
