@@ -1,4 +1,5 @@
 import requests
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -88,18 +89,18 @@ class UserDetailView(APIView):
         )
 
     def put(self, request):
-        user = request.user
+        user = get_object_or_404(CustomUser, pk=request.user.id)
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(
                 data={"message": "Successfully Update User Information", "user": serializer.data},
-                status=status.HTTP_201_CREATED,
+                status=status.HTTP_200_OK,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        user = request.user
+        user = get_object_or_404(CustomUser, pk=request.user.id)
         user.delete()
         return Response(data={"message": "Successfully Delete User Information"}, status=status.HTTP_200_OK)
 
@@ -182,7 +183,7 @@ class UserProfileImageView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request):
-        user = request.user
+        user = get_object_or_404(CustomUser, pk=request.user.id)
         image_file = request.FILES.get("profile_image")
         if not image_file:
             return Response(data={"message": "이미지 파일이 제공되지 않았습니다."}, status=status.HTTP_400_BAD_REQUEST)
@@ -199,5 +200,5 @@ class UserProfileImageView(APIView):
         serializer = self.serializer_class(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(data={"message": "Successfully Profile Image Upload"}, status=status.HTTP_201_CREATED)
+            return Response(data={"message": "Successfully Profile Image Upload"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

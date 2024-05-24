@@ -1,7 +1,8 @@
 from django.db.models import Count, Q
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -45,11 +46,7 @@ class RecipeMainAPIView(APIView):
 class RecipeListAPIView(APIView):
     serializer_class = RecipeSerializer
     pagination_class = RecipePagination
-
-    def get_permissions(self):
-        if self.request.method == "GET":
-            return [AllowAny()]
-        return [IsAuthenticated()]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     @staticmethod
     def get_list(request):
@@ -85,21 +82,18 @@ class RecipeListAPIView(APIView):
             )
         serializer = RecipeSerializer(page, many=True, context={"request": request})
         return paginator.get_paginated_response(serializer.data)
-        # return Response(
-        #     {
-        #         "message": "Successfully Read Recipe List",
-        #         "recipe_list": serializer.data,
-        #         "count": paginator.page.paginator.count,
-        #         "next": paginator.get_next_link(),
-        #         "previous": paginator.get_previous_link(),
-        #     }
-        # )
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(data={"message": "Successfully Created Recipe."}, status=status.HTTP_201_CREATED)
+        return Response(
+            data={
+                "message": "Successfully Created Recipe.",
+                "recipe": serializer.data
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 class RecipeMyAPIView(APIView):
@@ -109,7 +103,7 @@ class RecipeMyAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        my_recipes = Recipe.objects.filter(user_id=user.id)
+        my_recipes = Recipe.objects.filter(user_id=user.id).order_by("-created_at")
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(my_recipes, request)
         if not page:
@@ -119,24 +113,12 @@ class RecipeMyAPIView(APIView):
                 status=status.HTTP_200_OK,
             )
         serializer = RecipeSerializer(page, many=True, context={"request": request})
-        return Response(
-            {
-                "message": "Successfully Read My Recipe List",
-                "recipe_list": serializer.data,
-                "count": paginator.page.paginator.count,
-                "next": paginator.get_next_link(),
-                "previous": paginator.get_previous_link(),
-            }
-        )
+        return paginator.get_paginated_response(serializer.data)
 
 
 class RecipeDetailAPIView(APIView):
     serializer_class = RecipeSerializer
-
-    def get_queryset(self):
-        if self.request.method == "GET":
-            return [AllowAny]
-        return [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, recipe_id):
         recipe = Recipe.objects.filter(pk=recipe_id).first()
@@ -146,8 +128,7 @@ class RecipeDetailAPIView(APIView):
         )
 
     def put(self, request, recipe_id):
-        user = request.user
-        recipe = Recipe.objects.filter(pk=recipe_id, user_id=user.id).first()
+        recipe = get_object_or_404(Recipe, pk=recipe_id, user_id=request.user.id)
         serializer = self.serializer_class(recipe, data=request.data, context={"request": request}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -156,8 +137,7 @@ class RecipeDetailAPIView(APIView):
         )
 
     def delete(self, request, recipe_id):
-        user = request.user
-        recipe = Recipe.objects.filter(pk=recipe_id, user_id=user.id).first()
+        recipe = get_object_or_404(Recipe, pk=recipe_id, user_id=request.user.id)
         recipe.delete()
         return Response(data={"message": "Successfully Deleted Recipe."}, status=status.HTTP_200_OK)
 
