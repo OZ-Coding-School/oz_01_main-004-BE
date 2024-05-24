@@ -98,9 +98,14 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [("oz_01_main-004-be-redis-1", 6379)],  # Docker 컨테이너의 이름으로 호스트 지정
+            # "hosts": [("127.0.0.1", 6379)],  # Docker 컨테이너의 이름으로 호스트 지정
+
         },
     },
 }
+
+API_BASE_URL = 'https://cookbap.store/'
+# API_BASE_URL = 'http://127.0.0.1:8000/'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -120,7 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-API_BASE_URL = 'http://cookbap.store/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
