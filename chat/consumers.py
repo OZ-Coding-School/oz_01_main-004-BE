@@ -54,44 +54,49 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # API 호출을 통해 메시지 생성
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    f'{settings.API_BASE_URL}ws/v1/messages/',
-                    json={
-                        'room': room_id,
-                        'sender': sender_id,
-                        'content': content
-                    }
-            ) as response:
-                # apiview에서 처리하는 부분이기때문에 필요 없다.
-                # status_code = response.status
-                # if status_code == status.HTTP_404_NOT_FOUND:
-                #     await self.send(text_data=json.dumps({'error': '없는 채팅방입니다.'}))
-                # elif status_code == status.HTTP_403_FORBIDDEN:
-                #     await self.send(text_data=json.dumps({'error': '채팅방에 참가자가 아닙니다.'}))
-                # elif status_code == status.HTTP_201_CREATED:
-                    # 생성된 메시지의 내용을 가져옴
-                response_data = await response.json()
-                message_content = response_data.get('content')
-                message_id = response_data.get('id')
+            api_url = f'{settings.API_BASE_URL}ws/v1/messages/'
+            payload = {
+                'room': room_id,
+                'sender': sender_id,
+                'content': content
+            }
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            logger.info(f"Sending request to {api_url} with payload {payload} and headers {headers}")
 
-                # 생성된 메시지의 내용을 클라이언트에게 보냄
-                await self.send(text_data=json.dumps({
-                    'content': message_content,
-                    'sender_id': sender_id,
-                    'message_id': message_id,
-                    'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
-                }))
+            try:
+                async with session.post(api_url, json=payload, headers=headers) as response:
+                    logger.info(f"Received response status: {response.status}")
+                    response_data = await response.json()
+                    logger.info(f"API response: {response_data}")
 
-                # 그룹에 메시지 보내기
-                await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'chat_message',
-                    'content': message_content,
-                    'sender_id': sender_id,
-                    'message_id': message_id
-                }
-            )
+                    if response.status == 200 or response.status == 201:
+                        message_content = response_data.get('content')
+                        message_id = response_data.get('id')
+
+                        # 생성된 메시지의 내용을 클라이언트에게 보냄
+                        await self.send(text_data=json.dumps({
+                            'content': message_content,
+                            'sender_id': sender_id,
+                            'message_id': message_id,
+                            'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
+                        }))
+
+                        # 그룹에 메시지 보내기
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                'type': 'chat_message',
+                                'content': message_content,
+                                'sender_id': sender_id,
+                                'message_id': message_id
+                            }
+                        )
+                    else:
+                        logger.error(f"Unexpected response status: {response.status}")
+            except Exception as e:
+                logger.error(f"Error during API request: {e}")
 
 
     async def handle_file_message(self, data):
