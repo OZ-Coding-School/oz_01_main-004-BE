@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 from common.models import Common
@@ -18,6 +20,16 @@ class Recipe(Common):
         return self.title
 
 
+def upload_recipe_image_path(instance, filename):
+    return f"recipe/content/{uuid.uuid4().hex[:8]}+{filename}"
+
+
 class RecipeImage(models.Model):
-    # recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, null=True, blank=True)
+    image_uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     image = models.ImageField(upload_to="recipe/content/")
+
+    def get_image_url(self):
+        if self.image and hasattr(self.image, "url"):
+            return self.image.url
+        return None

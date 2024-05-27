@@ -6,8 +6,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Recipe
+from .models import Recipe, RecipeImage
 from .serializers import RecipeImageSerializer, RecipeSerializer
+import uuid
 
 
 class RecipePagination(PageNumberPagination):
@@ -84,9 +85,17 @@ class RecipeListAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data, context={"request": request})
+        data = request.data.copy()
+        uuid_list = data.pop("uuid_list", [])
+        valid_uuid_list = get_uuid_list(uuid_list[0])
+        serializer = self.serializer_class(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        recipe_id = serializer.data.get("id")
+        for uuid_data in valid_uuid_list:
+            image = RecipeImage.objects.filter(image_uuid=uuid_data).first()
+            image.recipe_id = recipe_id
+            image.save()
         return Response(
             data={
                 "message": "Successfully Created Recipe.",
@@ -150,7 +159,7 @@ class RecipeImageAPIView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(
-                data={"message": "Successfully Updated Recipe Image", "image_url": serializer.data},
+                data={"message": "Successfully Updated Recipe Image", "image_info": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
         return Response(
@@ -159,3 +168,15 @@ class RecipeImageAPIView(APIView):
             },
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+def get_uuid_list(uuid_list_str):
+    uuid_list = [s.strip().strip('"') for s in uuid_list_str.split(',')]
+    valid_uuid_list = []
+    for u in uuid_list:
+        try:
+            val = uuid.UUID(u, version=4)
+            valid_uuid_list.append(str(val))
+        except ValueError:
+            pass
+    return valid_uuid_list
