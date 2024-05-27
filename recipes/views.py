@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from .models import Recipe, RecipeImage
 from .serializers import RecipeImageSerializer, RecipeSerializer
 import uuid
+import json
 
 
 class RecipePagination(PageNumberPagination):
@@ -170,8 +171,11 @@ class RecipeImageAPIView(APIView):
         )
 
 
-def get_uuid_list(uuid_list_str):
-    uuid_list = [s.strip().strip('"') for s in uuid_list_str]
+def get_uuid_list(uuid_list_json):
+    try:
+        uuid_list = json.loads(uuid_list_json)
+    except json.JSONDecodeError:
+        uuid_list = []
     valid_uuid_list = []
     for u in uuid_list:
         try:
