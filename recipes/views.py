@@ -87,7 +87,7 @@ class RecipeListAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
         uuid_list = data.pop("uuid_list", [])
-        valid_uuid_list = get_uuid_list(uuid_list[0])
+        valid_uuid_list = get_uuid_list(uuid_list)
         serializer = self.serializer_class(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -171,7 +171,7 @@ class RecipeImageAPIView(APIView):
 
 
 def get_uuid_list(uuid_list_str):
-    uuid_list = [s.strip().strip('"') for s in uuid_list_str.split(',')]
+    uuid_list = [s.strip().strip('"') for s in uuid_list_str]
     valid_uuid_list = []
     for u in uuid_list:
         try:

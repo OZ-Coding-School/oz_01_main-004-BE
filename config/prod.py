@@ -1,6 +1,7 @@
 from .base import *
 
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = ["*", "https://cookbap.store"]
 
