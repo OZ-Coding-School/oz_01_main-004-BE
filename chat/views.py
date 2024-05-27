@@ -20,7 +20,7 @@ from .serializers import (
 
 
 class MyPagination(PageNumberPagination):
-    page_size = 1
+    page_size = 10
     page_size_query_param = "page_size"
 
 
@@ -150,18 +150,18 @@ class ChatMessageCreateAPIView(generics.CreateAPIView):
         sender_id = request.data.get("sender")
         message_content = request.data.get("content")
 
-        # 채팅방 객체 가져오기
-        try:
-            chatroom = ChatRoom.objects.get(id=chatroom_id)
-        except ChatRoom.DoesNotExist:
-            return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-
-        # 채팅방의 참가자 목록에서 작성자 찾기
-        if sender_id not in chatroom.participant.values_list("id", flat=True):
-            return Response(
-                {"error": "채팅방에 참가하지 않은 유저는 메시지를 작성할 수 없습니다."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # # 채팅방 객체 가져오기
+        # try:
+        #     chatroom = ChatRoom.objects.get(id=chatroom_id)
+        # except ChatRoom.DoesNotExist:
+        #     return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        #
+        # # 채팅방의 참가자 목록에서 작성자 찾기
+        # if sender_id not in chatroom.participant.values_list("customuser_id", flat=True):
+        #     return Response(
+        #         {"error": "채팅방에 참가하지 않은 유저는 메시지를 작성할 수 없습니다."},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
 
         return super().create(request, *args, **kwargs)
 
@@ -185,18 +185,18 @@ class ChatFileCreateAPIView(generics.CreateAPIView):
         message_file = request.FILES.get("file_url")  # 파일 객체 가져오기
         file_name = message_file.name  # 파일 이름 가져오기
 
-        # 채팅방 객체 가져오기
-        try:
-            chatroom = ChatRoom.objects.get(id=chatroom_id)
-        except ChatRoom.DoesNotExist:
-            return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-
-        # 채팅방의 참가자 목록에서 작성자 찾기
-        if int(sender_id) not in chatroom.participant.values_list("id", flat=True):
-            return Response(
-                {"error": "채팅방에 참가하지 않은 유저는 파일메시지를 작성할 수 없습니다."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        # # 채팅방 객체 가져오기
+        # try:
+        #     chatroom = ChatRoom.objects.get(id=chatroom_id)
+        # except ChatRoom.DoesNotExist:
+        #     return Response({"error": "채팅방을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        #
+        # # 채팅방의 참가자 목록에서 작성자 찾기
+        # if int(sender_id) not in chatroom.participant.values_list("customuser_id", flat=True):
+        #     return Response(
+        #         {"error": "채팅방에 참가하지 않은 유저는 파일메시지를 작성할 수 없습니다."},
+        #         status=status.HTTP_403_FORBIDDEN,
+        #     )
 
         return super().create(request, *args, **kwargs)
 
