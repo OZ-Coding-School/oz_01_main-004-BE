@@ -88,10 +88,12 @@ class RecipeListAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
         uuid_list = data.pop("uuid_list", [])
-        valid_uuid_list = get_uuid_list(uuid_list)
+        valid_uuid_list = get_uuid_list(uuid_list[0])
+
         serializer = self.serializer_class(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
         recipe_id = serializer.data.get("id")
         for uuid_data in valid_uuid_list:
             image = RecipeImage.objects.filter(image_uuid=uuid_data).first()
