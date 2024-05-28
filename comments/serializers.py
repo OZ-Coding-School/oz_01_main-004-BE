@@ -12,6 +12,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ["id", "user", "content", "created_at", "updated_at"]
+        depth = 1
 
     def create(self, validated_data):
         request = self.context.get("request")
