@@ -86,15 +86,15 @@ class RecipeListAPIView(APIView):
         return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
-        data = request.data.copy()
-        uuid_list = data.pop("uuid_list", [])
-        valid_uuid_list = get_uuid_list(uuid_list[0])
+        uuid_list = request.data.get("uuid_list", [])
+        valid_uuid_list = get_uuid_list(uuid_list)
 
-        serializer = self.serializer_class(data=data, context={"request": request})
+        serializer = self.serializer_class(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
         recipe_id = serializer.data.get("id")
+
         for uuid_data in valid_uuid_list:
             image = RecipeImage.objects.filter(image_uuid=uuid_data).first()
             image.recipe_id = recipe_id
