@@ -4,11 +4,18 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 
 from recipes.models import Recipe
 
 from .models import Favorite
 from .serializers import FavoriteSerializer
+
+
+class FavoriteRecipePagePagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class FavoriteListAPIView(APIView):
