@@ -1,13 +1,21 @@
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 
 from recipes.models import Recipe
 
 from .models import Favorite
 from .serializers import FavoriteSerializer
+
+
+class FavoriteRecipePagePagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class FavoriteListAPIView(APIView):
@@ -28,9 +36,7 @@ class FavoriteDetailAPIView(APIView):
     serializer_class = FavoriteSerializer
 
     def post(self, request, recipe_id):
-        recipe = Recipe.objects.filter(pk=recipe_id).first()
-        if not recipe:
-            return Response(data={"message": "Recipe Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
         if recipe.user == request.user:
             return Response(
                 data={"message": "내가 작성한 게시물은 찜할 수 없습니다."}, status=status.HTTP_400_BAD_REQUEST
@@ -51,9 +57,6 @@ class FavoriteDetailAPIView(APIView):
         return Response(data={"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, recipe_id):
-        user = request.user
-        favorite = Favorite.objects.filter(recipe_id=recipe_id, user_id=user.id).first()
-        if not favorite:
-            return Response(data={"message": "Favorite Not Found"}, status=status.HTTP_404_NOT_FOUND)
+        favorite = get_object_or_404(Favorite, recipe_id=recipe_id, user_id=request.user.id)
         favorite.delete()
         return Response(data={"message": "Successfully Deleted Favorite"}, status=status.HTTP_200_OK)

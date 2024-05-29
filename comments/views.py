@@ -12,10 +12,11 @@ from .serializers import CommentSerializer
 
 class CommentListCreateAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = CommentSerializer
 
     def get(self, request, recipe_id):
         comments = Comment.objects.filter(recipe_id=recipe_id).order_by('-created_at')
-        serializer = CommentSerializer(comments, many=True)
+        serializer = self.serializer_class(comments, many=True)
         return Response(
             {"message": "Successfully Read Comments", "comment_list": serializer.data}, status=status.HTTP_200_OK
         )
@@ -27,18 +28,22 @@ class CommentListCreateAPIView(APIView):
         except Recipe.DoesNotExist:
             raise NotFound("Recipe not found")
 
-        serializer = CommentSerializer(data=request.data, context={"request": request})
+        serializer = self.serializer_class(data=request.data, context={"request": request})
         if serializer.is_valid():
             if len(serializer.validated_data.get('content', '')) > 200:
                 raise ValidationError("Content length exceeds the maximum allowed length of 200 characters.")
 
             serializer.save()
-            return Response({"message": "Successfully Create Comment"}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "Successfully Create Comment", "comment": serializer.data},
+                status=status.HTTP_201_CREATED
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentDetailAPIView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    serializer_class = CommentSerializer
 
     def get_object(self, comment_id):
         try:
@@ -48,7 +53,7 @@ class CommentDetailAPIView(APIView):
 
     def get(self, request, comment_id):
         comment = self.get_object(comment_id)
-        serializer = CommentSerializer(comment)
+        serializer = self.serializer_class(comment)
         return Response({"message": "Successfully Read Comment", "comment": serializer.data}, status=status.HTTP_200_OK)
 
     def put(self, request, comment_id):
@@ -56,11 +61,11 @@ class CommentDetailAPIView(APIView):
         if request.user != comment.user:
             raise PermissionDenied("You do not have permission to edit this comment")
 
-        serializer = CommentSerializer(comment, data=request.data, partial=True)
+        serializer = self.serializer_class(comment, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "Successfully Update Comment", "comment": serializer.data}, status=status.HTTP_201_CREATED
+                {"message": "Successfully Update Comment", "comment": serializer.data}, status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
