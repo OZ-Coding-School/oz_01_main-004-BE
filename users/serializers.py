@@ -53,9 +53,16 @@ class KakaoSignInSerializer(TokenObtainPairSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
         fields = ["id", "email", "nickname", "profile_image", "created_at", "updated_at"]
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            return obj.profile_image.url
+        return "https://cookbap-bucket.s3.ap-northeast-2.amazonaws.com/cookbap/main/cookbap_default_profile.png"
 
 
 class UserUpdateSerializer(serializers.ModelSerializer[CustomUser]):

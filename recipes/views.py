@@ -19,7 +19,7 @@ class RecipePagination(PageNumberPagination):
 
 
 class RecipeMyPagePagination(PageNumberPagination):
-    page_size = 15
+    page_size = 12
     page_size_query_param = "page_size"
     max_page_size = 100
 
@@ -204,4 +204,3 @@ def update_recipe_image(recipe_id, image_url_list, uuid_list):
         image = RecipeImage.objects.filter(image_uuid=data).first()
         image.recipe_id = recipe_id
         image.save()
-
