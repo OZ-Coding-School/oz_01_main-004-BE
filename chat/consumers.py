@@ -55,7 +55,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # API 호출을 통해 메시지 생성
         async with aiohttp.ClientSession() as session:
-            api_url = f'{settings.API_BASE_URL}ws/v1/messages/'
+            api_url = f'{settings.API_BASE_URL}api/v1/chat/chatmessages/'
             payload = {
                 'room': room_id,
                 'sender': sender_id,
@@ -102,7 +102,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # API 호출을 통해 메시지 생성
         async with aiohttp.ClientSession() as session:
-            api_url = f'{settings.API_BASE_URL}ws/v1/messages/'
+            api_url = f'{settings.API_BASE_URL}api/v1//cahtfiles/'
             payload = {
                 'room': room_id,
                 'sender': sender_id,
