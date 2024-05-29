@@ -141,9 +141,12 @@ class RecipeDetailAPIView(APIView):
 
     def put(self, request, recipe_id):
         recipe = get_object_or_404(Recipe, pk=recipe_id, user_id=request.user.id)
+        image_url_list = request.data.get("image_url_list")
+        uuid_list = request.data.get("uuid_list")
         serializer = self.serializer_class(recipe, data=request.data, context={"request": request}, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        update_recipe_image(recipe_id, image_url_list, uuid_list)
         return Response(
             data={"message": "Successfully Updated Recipe.", "recipe": serializer.data}, status=status.HTTP_200_OK
         )
@@ -186,3 +189,19 @@ def get_uuid_list(uuid_list_json):
         except ValueError:
             pass
     return valid_uuid_list
+
+
+def update_recipe_image(recipe_id, image_url_list, uuid_list):
+    existing_image_list = RecipeImage.objects.filter(recipe__id=recipe_id)
+    new_image_list = json.loads(image_url_list)
+    new_image_uuid_list = json.loads(uuid_list)
+
+    for data in existing_image_list:
+        if data.image.url not in new_image_list:
+            data.delete()
+
+    for data in new_image_uuid_list:
+        image = RecipeImage.objects.filter(image_uuid=data).first()
+        image.recipe_id = recipe_id
+        image.save()
+
