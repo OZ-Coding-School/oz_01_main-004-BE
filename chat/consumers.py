@@ -1,17 +1,17 @@
-import aiohttp
 import json
-
-from asgiref.sync import sync_to_async
-from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import ChatFile,ChatRoom
-from rest_framework import status
-from django.conf import settings
 import logging
+import aiohttp
+from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
+from .models import ChatMessage, ChatFile  # 모델 이름은 적절하게 수정하세요
+from .serializers import ChatMessageSerializer, ChatFileSerializer, UserChatSerializer  # 시리얼라이저 이름은 적절하게 수정하세요
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 # 메시지 읽음 상태를 저장하는 데이터 구조
 read_status = {}
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -43,7 +43,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.handle_text_message(text_data_json)
         elif message_type == 'file':
             await self.handle_file_message(text_data_json)
-
+        elif message_type == 'read':
+            await self.handle_read_message(text_data_json)
 
     async def handle_text_message(self, data):
         room_id = data['room']
@@ -72,14 +73,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     logger.info(f"API response: {response_data}")
 
                     if response.status == 200 or response.status == 201:
-                        message_content = response_data.get('content')
-                        message_id = response_data.get('id')
-
                         # 생성된 메시지의 내용을 클라이언트에게 보냄
                         await self.send(text_data=json.dumps({
-                            'content': message_content,
-                            'sender_id': sender_id,
-                            'message_id': message_id,
+                            'type': 'text',
+                            'message': response_data,
                             'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
                         }))
 
@@ -88,9 +85,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             self.room_group_name,
                             {
                                 'type': 'chat_message',
-                                'content': message_content,
-                                'sender_id': sender_id,
-                                'message_id': message_id
+                                'message': response_data,
                             }
                         )
                     else:
@@ -98,112 +93,90 @@ class ChatConsumer(AsyncWebsocketConsumer):
             except Exception as e:
                 logger.error(f"Error during API request: {e}")
 
-
     async def handle_file_message(self, data):
         room_id = data['room']
         sender_id = data['sender']
         file_url = data['file_url']
 
-        logger.info(f"Handling text message: {data}")
+        logger.info(f"Handling file message: {data}")
 
-        # API 호출을 통해 파일 메시지 저장
+        # API 호출을 통해 메시지 생성
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                    f'{settings.API_BASE_URL}ws/v1/files/',
-                    json={
-                        'room': room_id,
-                        'sender': sender_id,
-                        'file_url': file_url
-                    }
-            ) as response:
-                if response.status == status.HTTP_201_CREATED:
-                    # 파일이 성공적으로 생성되었을 때, API 응답 데이터를 받음
-                    file_data = await response.json()
-                    file_id = file_data.get('id')
+            api_url = f'{settings.API_BASE_URL}ws/v1/messages/'
+            payload = {
+                'room': room_id,
+                'sender': sender_id,
+                'file_url': file_url
+            }
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            logger.info(f"Sending request to {api_url} with payload {payload} and headers {headers}")
 
-                    # 파일 메시지 전송
-                    await self.send(text_data=json.dumps({
-                        'content': file_url,
-                        'sender_id': sender_id,
-                        'file_id': file_id,
-                        'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
-                    }))
+            try:
+                async with session.post(api_url, json=payload, headers=headers) as response:
+                    logger.info(f"Received response status: {response.status}")
+                    response_data = await response.json()
+                    logger.info(f"API response: {response_data}")
 
-                    # 그룹에 파일 메시지 보내기
-                    await self.channel_layer.group_send(
-                        self.room_group_name,
-                        {
-                            'type': 'file_message',
-                            'content': file_url,
-                            'sender_id': sender_id,
-                            'file_id': file_id
-                        }
-                    )
-                else:
-                    # 실패한 경우, 적절한 에러 메시지 전송
-                    error_message = await response.text()
-                    await self.send(text_data=json.dumps({'error': error_message}))
+                    if response.status == 200 or response.status == 201:
+                        # 생성된 파일 메시지의 내용을 클라이언트에게 보냄
+                        await self.send(text_data=json.dumps({
+                            'type': 'file',
+                            'file': response_data,
+                            'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
+                        }))
 
+                        # 그룹에 메시지 보내기
+                        await self.channel_layer.group_send(
+                            self.room_group_name,
+                            {
+                                'type': 'chat_file',
+                                'file': response_data,
+                            }
+                        )
+                    else:
+                        logger.error(f"Unexpected response status: {response.status}")
+            except Exception as e:
+                logger.error(f"Error during API request: {e}")
+
+    async def handle_read_message(self, data):
+        message_id = data['message_id']
+        user_id = data['user_id']
+
+        if message_id in read_status:
+            read_status[message_id].append(user_id)
+        else:
+            read_status[message_id] = [user_id]
+
+        await self.send(text_data=json.dumps({
+            'type': 'read',
+            'message_id': message_id,
+            'read_by': read_status[message_id]
+        }))
 
     async def chat_message(self, event):
-        message_content = event['content']
-        message_id = event['message_id']
-        sender_id = event['sender_id']
+        message = event['message']
 
-        logger.info(f"Handling text message: {event}")
-
-        # 클라이언트로 메시지 전송
+        # 클라이언트에 메시지와 유저 정보를 전송
         await self.send(text_data=json.dumps({
-            'content': message_content,
-            'sender_id': sender_id,
-            'message_id': message_id,
-            'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
+            'type': 'text',
+            'message': message,
         }))
 
     async def chat_file(self, event):
-        file_url = event['file_url']
-        file_id = event['file_id']
-        sender_id = event['sender_id']
+        file = event['file']
 
-        logger.info(f"Handling text message: {event}")
-
-        # 클라이언트로 메시지 전송
+        # 클라이언트에 파일 메시지와 유저 정보를 전송
         await self.send(text_data=json.dumps({
-            'file_url': file_url,
-            'sender_id': sender_id,
-            'file_id': file_id,
-            'read_by': []  # 초기에는 아무도 읽지 않았음을 나타내는 빈 리스트
+            'type': 'file',
+            'file': file,
         }))
 
+    @database_sync_to_async
+    def get_chat_message(self, message_id):
+        return ChatMessage.objects.get(id=message_id)
 
-async def message_read(self, event):
-    message_id = event['message_id']
-    user_id = event['user_id']
-
-    # 해당 메시지의 read_by 필드에 유저의 ID 추가
-    read_by_list = read_status.get(message_id, [])
-    read_by_list.append(user_id)
-    read_status[message_id] = read_by_list
-
-    # 메시지를 읽은 사람의 정보를 포함하여 클라이언트로 전송
-    await self.send(text_data=json.dumps({
-        'message_id': message_id,
-        'user_id': user_id,
-        'read_by': read_by_list
-    }))
-
-async def file_read(self, event):
-    file_id = event['file_id']
-    user_id = event['user_id']
-
-    # 해당 메시지의 read_by 필드에 유저의 ID 추가
-    read_by_list = read_status.get(file_id, [])
-    read_by_list.append(user_id)
-    read_status[file_id] = read_by_list
-
-    # 메시지를 읽은 사람의 정보를 포함하여 클라이언트로 전송
-    await self.send(text_data=json.dumps({
-        'file_id': file_id,
-        'user_id': user_id,
-        'read_by': read_by_list
-    }))
+    @database_sync_to_async
+    def get_chat_file(self, message_id):
+        return ChatFile.objects.get(id=message_id)
