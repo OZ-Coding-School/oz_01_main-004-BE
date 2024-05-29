@@ -104,8 +104,8 @@ CHANNEL_LAYERS = {
     },
 }
 
-# API_BASE_URL = 'https://cookbap.store/'
-API_BASE_URL = 'https://127.0.0.1:9000/'
+API_BASE_URL = 'https://cookbap.store/'
+# API_BASE_URL = 'http://127.0.0.1:9000/'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
