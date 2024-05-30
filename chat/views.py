@@ -172,6 +172,7 @@ class ChatMessageDeleteAPIView(generics.DestroyAPIView):
     # permission_classes = [permissions.IsAuthenticated, IsSender]
     permission_classes = [permissions.AllowAny]
 
+
 class ChatFileCreateAPIView(generics.CreateAPIView):
     queryset = ChatFile.objects.all()
     serializer_class = ChatFileSerializer
