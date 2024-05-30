@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from config.settings import env
 
@@ -164,23 +164,18 @@ class KakaoSignInView(APIView):
         )
 
 
-# class TokenRefreshView(APIView):
-#     def post(self, request):
-#         try:
-#             refresh_token = request.data.get("refresh")
-#             if not refresh_token:
-#                 raise AuthenticationFailed("No refresh token provided")
-#
-#             token = RefreshToken(refresh_token)
-#             access_token = str(token.access_token)
-#             return Response(data={"access": access_token}, status=status.HTTP_200_OK)
-#         except Exception as e:
-#             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+class TokenRefreshView(APIView):
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                raise AuthenticationFailed("No refresh token provided")
 
-class RefreshTokenView(TokenRefreshView):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        return response
+            token = RefreshToken(refresh_token)
+            access_token = str(token.access_token)
+            return Response(data={"access": access_token}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileImageView(APIView):
