@@ -19,13 +19,13 @@ DATABASES = {
     }
 }
 
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:3000"]
+CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5173", "https://cookbap.netlify.app/"]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:3000", "https://cookbap.store"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:5173", "https://cookbap.store", "https://cookbap.netlify.app/"]
 
 CSRF_COOKIE_SECURE = True
 
