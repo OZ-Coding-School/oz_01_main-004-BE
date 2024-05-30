@@ -21,3 +21,10 @@ services:
       - .:/app
     ports:
       - "8000:8000"
+    command: >
+      sh -c "daphne -b 0.0.0.0 -p 8000 config.asgi:application"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"

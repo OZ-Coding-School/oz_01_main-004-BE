@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -30,12 +31,13 @@ THIRD_PARTY_APPS = [
 ]
 
 CUSTOM_USER_APPS = [
+    "daphne",
     "common.apps.CommonConfig",
-    # "comments.apps.CommentsConfig",
+    "comments.apps.CommentsConfig",
     "users.apps.UsersConfig",
-    # "recipes.apps.RecipesConfig",
-    # "foods.apps.FoodsConfig",
-    # "favorite.apps.FavoriteConfig",
+    "recipes.apps.RecipesConfig",
+    "foods.apps.FoodsConfig",
+    "favorite.apps.FavoriteConfig",
     "chat.apps.ChatConfig",
 ]
 
@@ -45,6 +47,17 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 16,
+}
+
+SIMPLE_JWT = {
+    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=180),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
+    "SIGNING_KEY": SECRET_KEY,
+    "ALGORITHM": "HS256",
+    "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
 MIDDLEWARE = [
@@ -78,6 +91,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("oz_01_main-004-be-redis-1", 6379)],  # Docker 컨테이너의 이름으로 호스트 지정
+            # "hosts": [("127.0.0.1", 6379)],  # Docker 컨테이너의 이름으로 호스트 지정
+        },
+    },
+}
+
+API_BASE_URL = "https://cookbap.store/"
+# API_BASE_URL = 'http://127.0.0.1:9000/'
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -103,12 +130,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 
 USE_TZ = False
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

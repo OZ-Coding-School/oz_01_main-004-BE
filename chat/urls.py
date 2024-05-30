@@ -20,7 +20,7 @@ urlpatterns = [
     path("chatmessages/", ChatMessageCreateAPIView.as_view(), name="chatmessage-create"),
     # 채팅메시지 삭제
     path(
-        "chatmessages/<int:pk>/",
+        "chatmessages/<int:pk>/delete",
         ChatMessageDeleteAPIView.as_view(),
         name="chatmessage-delete",
     ),
@@ -32,7 +32,7 @@ urlpatterns = [
     ),
     # 채팅 파일메세시지 삭제
     path(
-        "chatfiles/<int:pk>/",
+        "chatfiles/<int:pk>/delete",
         ChatFileDeleteAPIView.as_view(),
         name="chatmessage-delete",
     ),
