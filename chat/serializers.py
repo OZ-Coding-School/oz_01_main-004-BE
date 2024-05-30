@@ -10,7 +10,8 @@ from .models import ChatFile, ChatMessage, ChatRoom, LastRead
 class LastReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = LastRead
-        fields = '__all__'
+        fields = "__all__"
+
 
 class UserChatSerializer(serializers.ModelSerializer):
     class Meta:
@@ -120,4 +121,3 @@ class ChatRoomNameUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
         fields = ("name",)
-

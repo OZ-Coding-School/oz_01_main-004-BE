@@ -5,7 +5,9 @@ from .models import ChatFile, ChatMessage, ChatRoom
 
 @admin.register(ChatRoom)
 class ChatRoomAdmin(admin.ModelAdmin):
-    list_display = ["name",]
+    list_display = [
+        "name",
+    ]
 
 
 @admin.register(ChatMessage)

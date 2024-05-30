@@ -1,15 +1,20 @@
+import json
+import uuid
+
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Recipe, RecipeImage
 from .serializers import RecipeImageSerializer, RecipeSerializer
-import uuid
-import json
 
 
 class RecipePagination(PageNumberPagination):
@@ -100,11 +105,7 @@ class RecipeListAPIView(APIView):
             image.recipe_id = recipe_id
             image.save()
         return Response(
-            data={
-                "message": "Successfully Created Recipe.",
-                "recipe": serializer.data
-            },
-            status=status.HTTP_201_CREATED
+            data={"message": "Successfully Created Recipe.", "recipe": serializer.data}, status=status.HTTP_201_CREATED
         )
 
 

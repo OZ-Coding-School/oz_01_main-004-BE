@@ -15,7 +15,7 @@ class CommentListCreateAPIView(APIView):
     serializer_class = CommentSerializer
 
     def get(self, request, recipe_id):
-        comments = Comment.objects.filter(recipe_id=recipe_id).order_by('-created_at')
+        comments = Comment.objects.filter(recipe_id=recipe_id).order_by("-created_at")
         serializer = self.serializer_class(comments, many=True)
         return Response(
             {"message": "Successfully Read Comments", "comment_list": serializer.data}, status=status.HTTP_200_OK
@@ -30,13 +30,12 @@ class CommentListCreateAPIView(APIView):
 
         serializer = self.serializer_class(data=request.data, context={"request": request})
         if serializer.is_valid():
-            if len(serializer.validated_data.get('content', '')) > 200:
+            if len(serializer.validated_data.get("content", "")) > 200:
                 raise ValidationError("Content length exceeds the maximum allowed length of 200 characters.")
 
             serializer.save()
             return Response(
-                {"message": "Successfully Create Comment", "comment": serializer.data},
-                status=status.HTTP_201_CREATED
+                {"message": "Successfully Create Comment", "comment": serializer.data}, status=status.HTTP_201_CREATED
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
