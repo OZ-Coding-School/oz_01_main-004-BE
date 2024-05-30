@@ -12,7 +12,55 @@
 
 2024.05.02 ~ 2024.05.31
 
-## 서비스 소개
+## 🧰 사용 스택
+
+### :wrench: System Architecture
+
+<div align=center>
+    <img src="https://github.com/OZ-Coding-School/oz_01_main-004-BE/assets/49240318/3b516164-f6db-4c6b-9354-06947c36bc73"/>
+</div>
+
+### Front-End
+
+<div align=center>
+    <img src="https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=black"/>
+    <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
+    <img src="https://img.shields.io/badge/ReactQuery-FF4154?style=for-the-badge&logo=reactquery&logoColor=white"/>
+    <img src="https://img.shields.io/badge/reacthookform-EC5990?style=for-the-badge&logo=reacthookform&logoColor=black"/>
+    <br>
+    <img src="https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=black"/>
+    <img src="https://img.shields.io/badge/socketdotio-010101?style=for-the-badge&logo=socketdotio&logoColor=white"/>
+    <br>
+    <img src="https://img.shields.io/badge/styledcomponents-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=black"/>
+    <img src="https://img.shields.io/badge/cssmodules-blue?style=for-the-badge&logo=cssmodules&logoColor=white"/>
+</div>
+
+### Back-End
+
+<div align=center>
+  <img src="https://img.shields.io/badge/PYTHON-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img src="https://img.shields.io/badge/django-092E20?style=for-the-badge&logo=django&logoColor=white">
+  <img src="https://img.shields.io/badge/django restframework-092E20F?style=for-the-badge&logo=django restframework&logoColor=white">
+  <br>
+  <img src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white">
+  <img src="https://img.shields.io/badge/linux-FCC624?style=for-the-badge&logo=linux&logoColor=black"> 
+  <img src="https://img.shields.io/badge/nginx-006272?style=for-the-badge&logo=nginx&logoColor=green">
+  <img src="https://img.shields.io/badge/daphne-010101?style=for-the-badge&logo=daphne&logoColor=white"/>
+  <br>
+  <img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+  <img src="https://img.shields.io/badge/docker compose-2496ED?style=for-the-badge&logo=docker compose&logoColor=white">
+  <img src="https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
+  <br>
+</div>
+
+### collaboration tool
+
+<div align=center>
+    <img src="https://img.shields.io/badge/git-F24E1E?style=for-the-badge&logo=Git&logoColor=white"/>
+    <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"/>
+    <img src="https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"/>
+    <img src="https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white"/>
+</div>
 
 ### FE
 
@@ -26,23 +74,6 @@
 | :--------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------: |
 |                                                                              곽승환                                                                              |                                                                          김형진                                                                           |                                                                         전명환                                                                          |                                                                               임희연                                                                                |
 
-<img src="https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=black"/>
-<img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black"/>
-<img src="https://img.shields.io/badge/ReactQuery-FF4154?style=for-the-badge&logo=reactquery&logoColor=white"/>
-<img src="https://img.shields.io/badge/reacthookform-EC5990?style=for-the-badge&logo=reacthookform&logoColor=black"/>
-<img src="https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=black"/>
-<img src="https://img.shields.io/badge/socketdotio-010101?style=for-the-badge&logo=socketdotio&logoColor=white"/>
-<img src="https://img.shields.io/badge/styledcomponents-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=black"/>
-<img src="https://img.shields.io/badge/cssmodules-blue?style=for-the-badge&logo=cssmodules&logoColor=white"/>
-
-### Back-End
-
-### collaboration tool
-
-<img src="https://img.shields.io/badge/git-F24E1E?style=for-the-badge&logo=Git&logoColor=white"/>
-<img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white"/>
-<img src="https://img.shields.io/badge/discord-5865F2?style=for-the-badge&logo=discord&logoColor=white"/>
-<img src="https://img.shields.io/badge/figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white"/>
 
 ## 프로젝트 규칙
 
@@ -103,8 +134,10 @@
 #### FE
 
 <img src="https://img.shields.io/badge/eslint-4B32C3?style=for-the-badge&logo=eslint&logoColor=white"/>
-<img src="https://img.shields.io/badge/Prettier
--F7B93E?style=for-the-badge&logo=prettier
-&logoColor=white"/>
+<img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=white"/>
 
 #### BE
+
+<img src="https://img.shields.io/badge/black-010101?style=for-the-badge&logo=black&logoColor=white"/>
+<img src="https://img.shields.io/badge/isort-4169E1?style=for-the-badge&logo=isort&logoColor=white">
+
