@@ -61,7 +61,11 @@ class RecipeListAPIView(APIView):
 
         search = request.query_params.get("search")
         if search:
-            recipes = recipes.filter(Q(title__icontains=search) | Q(content__icontains=search))
+            recipes = recipes.filter(
+                Q(title__icontains=search) |
+                Q(content__icontains=search) |
+                Q(user__nickname__icontains=search)
+            )
 
         food_type = request.query_params.get("food_type")
         if food_type:
