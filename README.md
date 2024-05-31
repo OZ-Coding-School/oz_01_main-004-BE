@@ -57,9 +57,9 @@
 
 ### System Architecture
 
-
-![cookbap아키텍쳐-removebg-preview](https://github.com/OZ-Coding-School/oz_01_main-004-FE/assets/147421540/9fbf148e-91a2-4982-aeac-11a266bfa9f2)
-
+<div align=center>
+    <img src="https://github.com/OZ-Coding-School/oz_01_main-004-FE/assets/147421540/9fbf148e-91a2-4982-aeac-11a266bfa9f2"/>
+</div>
 
 
 ### Front-End
