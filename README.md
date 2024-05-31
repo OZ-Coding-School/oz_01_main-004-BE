@@ -195,4 +195,5 @@
 
 ### ERD
 
-![alt text](cookbap-erd.png)
+
+![cookbap-erd](https://github.com/OZ-Coding-School/oz_01_main-004-BE/assets/49240318/6c79e701-2aa5-41f6-a289-f406fce3eb2d)
